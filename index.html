@@ -315,8 +315,7 @@ tr:hover td{background:var(--bg3)}
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────
-const MASTER_KEY='$2a$10$dDC0kq0zaxIsHZvGyUZyB.OW7IXpadEFAE88fPaC3wTXXlO.jcnQG';
-const BIN_ID_KEY='cr_bin_id_v3';
+const GS_URL='https://script.google.com/macros/s/AKfycbwA6ACgkOlA0kWllxVzFqmzEn1GiAM3ns0LESZAOU-lx45OOwOAVgD3wpiqp2OHZN8e/exec';
 const LOCAL_KEY='cr_local_v3';
 
 // ─── PRODUTOS ─────────────────────────────────────────────────
@@ -398,7 +397,7 @@ const BARS=['linear-gradient(90deg,#d470aa,#f09ad0)','linear-gradient(90deg,#508
 let DB={sales:[],stock:{},costs:{},freights:{},clients:[],suppliers:[],expenses:[],restock:[],meta:{monthly:0}};
 let cartItems=[{pid:1,qty:1,price:59.90,cost:23.98,freight:0}];
 let saveTimer=null;
-let BIN_ID=localStorage.getItem(BIN_ID_KEY)||null;
+
 
 // ─── SYNC UI ──────────────────────────────────────────────────
 function setSS(msg,state){
@@ -407,34 +406,34 @@ function setSS(msg,state){
   d.className='sync-dot'+(state?' '+state:'');
 }
 
-// ─── JSONBIN ──────────────────────────────────────────────────
-async function jbCreate(data){
-  const r=await fetch('https://api.jsonbin.io/v3/b',{method:'POST',headers:{'Content-Type':'application/json','X-Master-Key':MASTER_KEY,'X-Bin-Name':'ce-reinvente-db'},body:JSON.stringify(data)});
-  const j=await r.json();return j.metadata?.id||null;
+// ─── GOOGLE SHEETS ────────────────────────────────────────────
+async function gsRead(){
+  try{
+    const r=await fetch(GS_URL);
+    const text=await r.text();
+    return JSON.parse(text);
+  }catch(e){return null;}
 }
-async function jbRead(id){
-  const r=await fetch(`https://api.jsonbin.io/v3/b/${id}/latest`,{headers:{'X-Master-Key':MASTER_KEY}});
-  const j=await r.json();return j.record||null;
-}
-async function jbWrite(id,data){
-  const r=await fetch(`https://api.jsonbin.io/v3/b/${id}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':MASTER_KEY},body:JSON.stringify(data)});
-  return r.ok;
+async function gsWrite(data){
+  try{
+    const r=await fetch(GS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(data)});
+    const j=await r.json();
+    return j.success===true;
+  }catch(e){return false;}
 }
 
 // ─── LOAD ─────────────────────────────────────────────────────
 async function loadData(){
   setSS('Conectando...','amber');
+  setMsg('Carregando dados do Google Sheets...');
   let loaded=false;
-  if(BIN_ID){
-    try{
-      setMsg('Carregando dados da nuvem ☁️');
-      const data=await jbRead(BIN_ID);
-      if(data){DB={...DB,...data};loaded=true;setSS('☁️ Nuvem','green');}
-    }catch(e){setSS('Offline','amber');}
-  }
+  try{
+    const data=await gsRead();
+    if(data&&data.sales!==undefined){DB={...DB,...data};loaded=true;setSS('☁️ Sheets','green');}
+  }catch(e){}
   if(!loaded){
     const local=localStorage.getItem(LOCAL_KEY);
-    if(local){try{DB={...DB,...JSON.parse(local)};setSS('Local','amber');}catch(e){}}
+    if(local){try{DB={...DB,...JSON.parse(local)};setSS('💾 Local','amber');}catch(e){}}
   }
   ALL.forEach(p=>{
     if(DB.stock[p.id]===undefined)DB.stock[p.id]=1;
@@ -450,27 +449,22 @@ async function loadData(){
   }
   document.getElementById('loading-overlay').style.display='none';
   document.getElementById('btn-save').style.display='inline-block';
-  if(!BIN_ID){
-    setMsg('Criando banco na nuvem...');
-    try{BIN_ID=await jbCreate(DB);if(BIN_ID){localStorage.setItem(BIN_ID_KEY,BIN_ID);setSS('☁️ Nuvem','green');}}catch(e){}
-  }
-  showBinInfo();
+  showGSInfo();
   await saveData();
   renderHome();
 }
 function setMsg(t){const el=document.getElementById('load-msg');if(el)el.textContent=t;}
-function showBinInfo(){
-  if(!BIN_ID)return;
-  document.getElementById('bin-info-bar').innerHTML=`<div class="bin-info">✓ Conectado ao JSONBin &nbsp;·&nbsp; BIN ID: <strong>${BIN_ID}</strong> &nbsp;·&nbsp; <span style="color:var(--text2)">Cole esse ID no Claude para acesso direto</span></div>`;
+function showGSInfo(){
+  document.getElementById('bin-info-bar').innerHTML=`<div class="bin-info">✓ Conectado ao Google Sheets &nbsp;·&nbsp; <span style="color:var(--text2)">Dados sincronizados automaticamente com sua planilha</span></div>`;
 }
 
 // ─── SAVE ─────────────────────────────────────────────────────
 async function saveData(){
   setSS('Salvando...','amber');
   let ok=false;
-  if(BIN_ID){try{ok=await jbWrite(BIN_ID,DB);}catch(e){}}
+  try{ok=await gsWrite(DB);}catch(e){}
   try{localStorage.setItem(LOCAL_KEY,JSON.stringify(DB));}catch(e){}
-  if(ok)setSS('☁️ Salvo','green');else setSS('💾 Local','amber');
+  if(ok)setSS('☁️ Sheets','green');else setSS('💾 Local','amber');
 }
 function scheduleSave(){if(saveTimer)clearTimeout(saveTimer);setSS('● Editando','pink');saveTimer=setTimeout(saveData,2000);}
 async function forceSave(){if(saveTimer)clearTimeout(saveTimer);await saveData();}
@@ -557,7 +551,7 @@ function delSup(id){if(!confirm('Excluir?'))return;DB.suppliers=DB.suppliers.fil
 function closeModal(){document.querySelectorAll('.modal-bg').forEach(m=>m.remove());}
 
 function openClaudeModal(){
-  const binLine=BIN_ID?`\n🔗 BIN ID: ${BIN_ID}\nURL dados: https://api.jsonbin.io/v3/b/${BIN_ID}/latest`:'';
+  const binLine=`\n🔗 Google Sheets: ${GS_URL}`;
   const now=new Date();const paid=DB.sales.filter(s=>!s.pending),pend=DB.sales.filter(s=>s.pending);const rev=paid.reduce((s,v)=>s+v.total,0),pendRev=pend.reduce((s,v)=>s+v.total,0);const cst=DB.sales.reduce((s,v)=>s+tcSale(v),0),expTotal=DB.expenses.reduce((s,e)=>s+e.value,0);const profit=rev-cst-expTotal,margin=rev>0?Math.round((profit/rev)*100):0;const qty=DB.sales.reduce((s,v)=>s+(v.items?v.items.reduce((a,i)=>a+(i.qty||1),0):(v.qty||1)),0);const counts={};DB.sales.forEach(v=>{if(v.items)v.items.forEach(i=>{counts[i.pid]=(counts[i.pid]||0)+(i.qty||1);});else counts[v.productId]=(counts[v.productId]||0)+(v.qty||1);});const topProd=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id,cnt])=>{const p=getP(id);return`  - ${p?p.n:'?'}: ${cnt}un`;}).join('\n');const pendList=pend.map(v=>{const p=v.items?getP(v.items[0].pid):getP(v.productId);return`  - ${p?p.n:'?'}: ${fmt(v.total)}`;}).join('\n');const bycat={};DB.expenses.forEach(e=>{bycat[e.cat]=(bycat[e.cat]||0)+e.value;});
   const resumo=`📊 DADOS — CÊ REINVENTE — ${now.toLocaleDateString('pt-BR')}${binLine}\n\n💰 FINANCEIRO\nRecebido: ${fmt(rev)} | A receber: ${fmt(pendRev)}\nCusto: ${fmt(cst)} | Despesas: ${fmt(expTotal)}\nLucro: ${fmt(profit)} | Margem: ${margin}% | Peças: ${qty}\n\n⏳ A RECEBER\n${pendList||'  Nenhuma'}\n\n📦 ESTOQUE (${ALL.reduce((s,p)=>s+(DB.stock[p.id]||0),0)} peças)\nZerados: ${ALL.filter(p=>(DB.stock[p.id]||0)===0).map(p=>p.n).slice(0,5).join(', ')||'Nenhum'}\n\n🏆 MAIS VENDIDOS\n${topProd||'  Nenhuma venda'}\n\n💸 DESPESAS\n${Object.entries(bycat).map(([c,v])=>`  - ${c}: ${fmt(v)}`).join('\n')||'  Nenhuma'}\n\n🚚 FORNECEDORES: ${DB.suppliers.map(s=>s.name).join(', ')}`;
   const m=document.createElement('div');m.className='modal-bg';m.id='claude-modal';m.innerHTML=`<div class="modal"><div class="modal-t">Enviar para Claude<button class="close-btn" onclick="closeModal()">×</button></div><p style="font-size:12px;color:var(--text2);margin-bottom:10px">Copie e cole no chat do Claude. O BIN ID permite acesso direto!</p><textarea id="claude-text" readonly style="width:100%;height:200px;font-size:11px;padding:10px;border-radius:8px;border:1px solid var(--border2);background:var(--bg);color:var(--text);resize:none;font-family:var(--mono)">${resumo}</textarea><div style="display:flex;gap:8px;margin-top:10px;align-items:center"><button class="btn full" onclick="copyTxt()">Copiar tudo</button><span id="copy-ok" style="color:var(--green);font-size:12px;display:none;font-family:var(--mono)">Copiado!</span></div></div>`;document.getElementById('modal-root').appendChild(m);}
