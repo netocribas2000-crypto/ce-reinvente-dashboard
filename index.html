@@ -695,9 +695,66 @@ function closeModal(){document.querySelectorAll('.modal-bg').forEach(m=>m.remove
 
 function openClaudeModal(){
   const binLine=`\n🔗 Google Sheets: ${GS_URL}`;
-  const now=new Date();const paid=DB.sales.filter(s=>!s.pending),pend=DB.sales.filter(s=>s.pending);const rev=paid.reduce((s,v)=>s+v.total,0),pendRev=pend.reduce((s,v)=>s+v.total,0);const cst=DB.sales.reduce((s,v)=>s+tcSale(v),0),expTotal=DB.expenses.reduce((s,e)=>s+e.value,0);const profit=rev-cst-expTotal,margin=rev>0?Math.round((profit/rev)*100):0;const qty=DB.sales.reduce((s,v)=>s+(v.items?v.items.reduce((a,i)=>a+(i.qty||1),0):(v.qty||1)),0);const counts={};DB.sales.forEach(v=>{if(v.items)v.items.forEach(i=>{counts[i.pid]=(counts[i.pid]||0)+(i.qty||1);});else counts[v.productId]=(counts[v.productId]||0)+(v.qty||1);});const topProd=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id,cnt])=>{const p=getP(id);return`  - ${p?p.n:'?'}: ${cnt}un`;}).join('\n');const pendList=pend.map(v=>{const p=v.items?getP(v.items[0].pid):getP(v.productId);return`  - ${p?p.n:'?'}: ${fmt(v.total)}`;}).join('\n');const bycat={};DB.expenses.forEach(e=>{bycat[e.cat]=(bycat[e.cat]||0)+e.value;});
-  const resumo=`📊 DADOS — CÊ REINVENTE — ${now.toLocaleDateString('pt-BR')}${binLine}\n\n💰 FINANCEIRO\nRecebido: ${fmt(rev)} | A receber: ${fmt(pendRev)}\nCusto: ${fmt(cst)} | Despesas: ${fmt(expTotal)}\nLucro: ${fmt(profit)} | Margem: ${margin}% | Peças: ${qty}\n\n⏳ A RECEBER\n${pendList||'  Nenhuma'}\n\n📦 ESTOQUE (${ALL.reduce((s,p)=>s+(DB.stock[p.id]||0),0)} peças)\nZerados: ${ALL.filter(p=>(DB.stock[p.id]||0)===0).map(p=>p.n).slice(0,5).join(', ')||'Nenhum'}\n\n🏆 MAIS VENDIDOS\n${topProd||'  Nenhuma venda'}\n\n💸 DESPESAS\n${Object.entries(bycat).map(([c,v])=>`  - ${c}: ${fmt(v)}`).join('\n')||'  Nenhuma'}\n\n🚚 FORNECEDORES: ${DB.suppliers.map(s=>s.name).join(', ')}`;
-  const m=document.createElement('div');m.className='modal-bg';m.id='claude-modal';m.innerHTML=`<div class="modal"><div class="modal-t">Enviar para Claude<button class="close-btn" onclick="closeModal()">×</button></div><p style="font-size:12px;color:var(--text2);margin-bottom:10px">Copie e cole no chat do Claude. O BIN ID permite acesso direto!</p><textarea id="claude-text" readonly style="width:100%;height:200px;font-size:11px;padding:10px;border-radius:8px;border:1px solid var(--border2);background:var(--bg);color:var(--text);resize:none;font-family:var(--mono)">${resumo}</textarea><div style="display:flex;gap:8px;margin-top:10px;align-items:center"><button class="btn full" onclick="copyTxt()">Copiar tudo</button><span id="copy-ok" style="color:var(--green);font-size:12px;display:none;font-family:var(--mono)">Copiado!</span></div></div>`;document.getElementById('modal-root').appendChild(m);}
+  const now=new Date();
+  const paid=DB.sales.filter(s=>!s.pending),pend=DB.sales.filter(s=>s.pending);
+  const rev=paid.reduce((s,v)=>s+v.total,0),pendRev=pend.reduce((s,v)=>s+v.total,0);
+  const cst=DB.sales.reduce((s,v)=>s+tcSale(v),0),expTotal=DB.expenses.reduce((s,e)=>s+e.value,0);
+  const profit=rev-cst-expTotal,margin=rev>0?Math.round((profit/rev)*100):0;
+  const qty=DB.sales.reduce((s,v)=>s+(v.items?v.items.reduce((a,i)=>a+(i.qty||1),0):(v.qty||1)),0);
+  const counts={};DB.sales.forEach(v=>{if(v.items)v.items.forEach(i=>{counts[i.pid]=(counts[i.pid]||0)+(i.qty||1);});else counts[v.productId]=(counts[v.productId]||0)+(v.qty||1);});
+  const topProd=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id,cnt])=>{const p=getP(id);return`  - ${p?p.n:'?'}: ${cnt}un`;}).join('\n');
+  const bycat={};DB.expenses.forEach(e=>{bycat[e.cat]=(bycat[e.cat]||0)+e.value;});
+
+  // Detalhamento completo de todas as vendas
+  const allSalesDetail=[...DB.sales].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(v=>{
+    const prods=v.items?v.items.map(i=>{const p=getP(i.pid);return(p?p.n:'?')+(i.qty>1?` x${i.qty}`:'');}).join(', '):(getP(v.productId)?.n||'?');
+    const d=new Date(v.date).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+    const status=v.pending?'⏳ pendente':'✅ pago';
+    const due=v.dueDate?` | pagar em: ${new Date(v.dueDate+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}`:'';
+    return`  ${d} | ${v.client||'—'} | ${prods} | ${fmt(v.total)} | ${status}${due}`;
+  }).join('\n');
+
+  // CRM completo
+  const crmDetail=DB.clients.map(c=>{
+    const cs=DB.sales.filter(v=>v.clientId==c.id);
+    const pend_c=cs.filter(v=>v.pending).reduce((s,v)=>s+v.total,0);
+    const days=c.lastPurchase?Math.floor((new Date()-new Date(c.lastPurchase))/(1000*60*60*24)):null;
+    return`  ${c.name} [${c.stage}] | gasto: ${fmt(c.totalSpent||0)} | compras: ${cs.length}${pend_c>0?` | a receber: ${fmt(pend_c)}`:''}${days!==null?` | última: ${days}d atrás`:''}${c.phone?` | ${c.phone}`:''}${c.notes?` | obs: ${c.notes}`:''}`;
+  }).join('\n');
+
+  // Estoque detalhado (só zerados e baixo)
+  const stkAlerts=ALL.filter(p=>(DB.stock[p.id]||0)<=1).map(p=>`  ${p.n}: ${DB.stock[p.id]||0} un`).join('\n');
+
+  const resumo=`📊 DADOS COMPLETOS — CÊ REINVENTE — ${now.toLocaleDateString('pt-BR')}${binLine}
+
+💰 FINANCEIRO
+Recebido: ${fmt(rev)} | A receber: ${fmt(pendRev)}
+Custo: ${fmt(cst)} | Despesas: ${fmt(expTotal)}
+Lucro: ${fmt(profit)} | Margem: ${margin}% | Peças: ${qty}
+Lucro potencial (se receber tudo): ${fmt(rev+pendRev-cst-expTotal)}
+
+📋 TODAS AS VENDAS (${DB.sales.length} total)
+${allSalesDetail||'  Nenhuma'}
+
+👥 CRM (${DB.clients.length} clientes)
+${crmDetail||'  Nenhum'}
+
+📦 ESTOQUE — zerados/últimas peças
+${stkAlerts||'  Tudo em estoque'}
+Total: ${ALL.reduce((s,p)=>s+(DB.stock[p.id]||0),0)} peças
+
+🏆 MAIS VENDIDOS
+${topProd||'  Nenhuma venda'}
+
+💸 DESPESAS
+${Object.entries(bycat).map(([c,v])=>`  - ${c}: ${fmt(v)}`).join('\n')||'  Nenhuma'}
+
+🚚 FORNECEDORES: ${DB.suppliers.map(s=>s.name).join(', ')}`;
+
+  const m=document.createElement('div');m.className='modal-bg';m.id='claude-modal';
+  m.innerHTML=`<div class="modal" style="max-width:600px"><div class="modal-t">🤖 Enviar para Claude<button class="close-btn" onclick="closeModal()">×</button></div><p style="font-size:12px;color:var(--text2);margin-bottom:10px">Resumo completo com todas as vendas, CRM e estoque. Cole no chat do Claude!</p><textarea id="claude-text" readonly style="width:100%;height:300px;font-size:11px;padding:10px;border-radius:8px;border:1px solid var(--border2);background:var(--bg);color:var(--text);resize:none;font-family:var(--mono)">${resumo}</textarea><div style="display:flex;gap:8px;margin-top:10px;align-items:center"><button class="btn full" onclick="copyTxt()">📋 Copiar tudo</button><span id="copy-ok" style="color:var(--green);font-size:12px;display:none;font-family:var(--mono)">✅ Copiado!</span></div></div>`;
+  document.getElementById('modal-root').appendChild(m);
+}
 function copyTxt(){const txt=document.getElementById('claude-text');txt.select();try{document.execCommand('copy');}catch(e){navigator.clipboard.writeText(txt.value);}const ok=document.getElementById('copy-ok');ok.style.display='inline';setTimeout(()=>ok.style.display='none',2500);}
 
 
