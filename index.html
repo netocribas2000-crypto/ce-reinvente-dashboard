@@ -638,15 +638,17 @@ async function gsWrite(data){
 async function loadData(){
   setSS('Conectando...','amber');
   setMsg('Carregando dados do Google Sheets...');
-  let loaded=false;
-  try{
-    const data=await gsRead();
-    if(data&&data.sales!==undefined){DB={...DB,...data};loaded=true;setSS('☁️ Sheets','green');}
-  }catch(e){}
-  if(!loaded){
-    const local=localStorage.getItem(LOCAL_KEY);
-    if(local){try{DB={...DB,...JSON.parse(local)};setSS('💾 Local','amber');}catch(e){}}
-  }
+  let sheetsData=null,localData=null;
+  try{const d=await gsRead();if(d&&d.sales!==undefined)sheetsData=d;}catch(e){}
+  try{const l=localStorage.getItem(LOCAL_KEY);if(l)localData=JSON.parse(l);}catch(e){}
+  // Usa o dado com mais vendas; em empate prefere Sheets
+  const sCount=sheetsData?.sales?.length??-1;
+  const lCount=localData?.sales?.length??-1;
+  if(lCount>sCount&&localData){DB={...DB,...localData};setSS('💾 Local (mais atual)','amber');}
+  else if(sheetsData){DB={...DB,...sheetsData};setSS('☁️ Sheets','green');}
+  else if(localData){DB={...DB,...localData};setSS('💾 Local','amber');}
+  // Persiste o dado mais recente de volta no localStorage para garantia
+  try{localStorage.setItem(LOCAL_KEY,JSON.stringify(DB));}catch(e){}
   ALL.forEach(p=>{
     if(DB.stock[p.id]===undefined)DB.stock[p.id]=1;
     if(DB.costs[p.id]===undefined)DB.costs[p.id]=p.cost||0;
