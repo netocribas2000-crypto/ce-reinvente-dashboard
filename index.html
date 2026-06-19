@@ -209,6 +209,16 @@ tr:hover td{background:var(--bg3)}
 .cat-restock-btn{width:100%;margin-top:8px;padding:7px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-size:11px;font-family:var(--font);transition:all .15s}
 .cat-restock-btn:hover{background:var(--pinkbg);color:var(--pink);border-color:var(--pink)}
 
+/* PERFIL CLIENTE */
+.profile-chips{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}
+.profile-chip{font-size:10px;padding:3px 9px;border-radius:99px;font-family:var(--mono);font-weight:600;border:1px solid transparent}
+.pref-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);margin:2px;cursor:pointer}
+.pref-tag:hover{border-color:var(--pink);color:var(--pink)}
+.crm-profile-bar{padding:8px 10px;background:var(--bg3);border-radius:10px;margin-bottom:8px;border-left:3px solid var(--purple)}
+.client-heatrow{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.client-heatrow-label{font-size:11px;color:var(--text3);width:90px;flex-shrink:0}
+.client-heatcell{flex:1;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-family:var(--mono);font-weight:700;color:#fff;transition:opacity .3s}
+
 /* COBRANÇAS CARDS */
 .charge-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px;transition:all .2s;position:relative;overflow:hidden}
 .charge-card:hover{border-color:var(--amber);box-shadow:0 4px 24px rgba(232,160,48,.08);transform:translateY(-1px)}
@@ -445,6 +455,7 @@ tr:hover td{background:var(--bg3)}
     <button class="intel-tab" onclick="switchIntel('cores',this)">🎨 Cores</button>
     <button class="intel-tab" onclick="switchIntel('pagamentos',this)">💳 Pagamentos</button>
     <button class="intel-tab" onclick="switchIntel('calendario',this)">📅 Calendário</button>
+    <button class="intel-tab" onclick="switchIntel('clientes',this)">👤 Clientes</button>
     <button class="intel-tab" onclick="switchIntel('estoque',this)">📦 Estoque</button>
   </div>
   <div id="intel-panel"></div>
@@ -916,8 +927,107 @@ function _renderBuyList(){
 function startPurchase(pid){const p=getP(pid);if(!p)return;goTab('fornecedores');setTimeout(()=>{const q=document.getElementById('search-sup');if(q){q.value=SUP_L[p.supplier]||p.supplier;renderSuppliers();}alert(`Compra sugerida: ${p.n}\nFornecedor: ${SUP_L[p.supplier]||p.supplier}\nCusto estimado: ${fmt((DB.costs[p.id]||0)+(DB.freights[p.id]||0))}`);},80);}
 let _intelTab='colecoes';
 function switchIntel(tab,btn){_intelTab=tab;document.querySelectorAll('.intel-tab').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderIntelPanel();}
+const COL_META_L={personagens:'👾 Personagens',religiosa:'✝️ Religiosas',basica:'⚫ Básicas',brasil:'🇧🇷 Brasil',urbana:'🏙️ Urbana',natureza:'🌸 Natureza',academia:'💪 Academia'};
+const COL_COLORS={personagens:'var(--purple)',religiosa:'var(--teal)',basica:'var(--text3)',brasil:'var(--green)',urbana:'var(--blue)',natureza:'var(--pink)',academia:'var(--amber)'};
+const COLOR_KEYS=[{keys:['preta','preto','black'],label:'Preta',color:'#888'},{keys:['branca','branco','white'],label:'Branca',color:'#ccc'},{keys:['rosa','pink'],label:'Rosa',color:'var(--pink)'},{keys:['azul','blue','marinho'],label:'Azul',color:'var(--blue)'},{keys:['verde','green'],label:'Verde',color:'var(--green)'},{keys:['vermelha','vermelho','red'],label:'Vermelha',color:'var(--red)'},{keys:['amarela','amarelo'],label:'Amarela',color:'var(--amber)'},{keys:['roxa','roxo','lilas'],label:'Roxa',color:'var(--purple)'},{keys:['cinza','gray'],label:'Cinza',color:'var(--teal)'}];
+function inferColor(p){const n=(p.n+' '+(p.c||'')).toLowerCase();for(const c of COLOR_KEYS){if(c.keys.some(k=>n.includes(k)))return c;}return null;}
+function getClientProfile(clientId){
+  const sales=DB.sales.filter(v=>v.clientId==clientId);
+  if(!sales.length)return null;
+  const colCounts={},colorCounts={};let totalQty=0;
+  sales.forEach(v=>{(v.items||[{pid:v.productId,qty:1}]).forEach(i=>{const p=getP(i.pid);if(!p)return;const qty=i.qty||1;totalQty+=qty;const col=p.col||'basica';colCounts[col]=(colCounts[col]||0)+qty;const cor=inferColor(p);if(cor)colorCounts[cor.label]=(colorCounts[cor.label]||0)+qty;});});
+  const topCol=Object.entries(colCounts).sort((a,b)=>b[1]-a[1])[0];
+  const topColor=Object.entries(colorCounts).sort((a,b)=>b[1]-a[1])[0];
+  const totalSpent=sales.reduce((s,v)=>s+v.total,0);
+  const avgTicket=totalSpent/sales.length;
+  const avgQty=totalQty/sales.length;
+  const lastSale=[...sales].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+  const daysSince=lastSale?.date?Math.round((Date.now()-new Date(lastSale.date))/86400000):999;
+  const segs=[];
+  if(avgTicket>=150)segs.push({label:'💎 VIP',color:'var(--amber)',bg:'var(--amberbg)'});
+  if(avgQty>=2.5)segs.push({label:'🛍️ Compra em trio',color:'var(--blue)',bg:'var(--bluebg)'});
+  if(topCol&&(colCounts[topCol[0]]||0)/Math.max(totalQty,1)>0.55)segs.push({label:`❤️ Fã de ${COL_META_L[topCol[0]]||topCol[0]}`,color:'var(--purple)',bg:'var(--purplebg)'});
+  if(daysSince>60)segs.push({label:'⚠️ Em risco',color:'var(--red)',bg:'var(--redbg)'});
+  else if(daysSince<30&&sales.length>=3)segs.push({label:'🔥 Engajada',color:'var(--green)',bg:'var(--greenbg)'});
+  if(sales.length>=5)segs.push({label:'⭐ Fiel',color:'var(--teal)',bg:'var(--tealbg)'});
+  return{topCol:topCol?.[0],topColor,avgTicket,avgQty,daysSince,totalSales:sales.length,totalSpent,colCounts,colorCounts,totalQty,segs};
+}
+
 function renderConferencia(){_intelTab='colecoes';document.querySelectorAll('.intel-tab').forEach((b,i)=>{b.classList.toggle('active',i===0);});renderIntelPanel();}
-function renderIntelPanel(){const el=document.getElementById('intel-panel');if(!el)return;const fns={colecoes:intelColecoes,cores:intelCores,pagamentos:intelPagamentos,calendario:intelCalendario,estoque:intelEstoque};(fns[_intelTab]||intelColecoes)(el);}
+function renderIntelPanel(){const el=document.getElementById('intel-panel');if(!el)return;const fns={colecoes:intelColecoes,cores:intelCores,pagamentos:intelPagamentos,calendario:intelCalendario,clientes:intelClientes,estoque:intelEstoque};(fns[_intelTab]||intelColecoes)(el);}
+
+function intelClientes(el){
+  const withSales=DB.clients.filter(c=>DB.sales.some(v=>v.clientId==c.id));
+  const profiles=withSales.map(c=>({c,p:getClientProfile(c.id)})).filter(x=>x.p);
+  const segCount={};profiles.forEach(({p})=>p.segs.forEach(s=>{segCount[s.label]=(segCount[s.label]||0)+1;}));
+  const colDemand={};profiles.forEach(({p})=>Object.entries(p.colCounts).forEach(([col,qty])=>{colDemand[col]=(colDemand[col]||0)+qty;}));
+  const colorDemand={};profiles.forEach(({p})=>Object.entries(p.colorCounts).forEach(([cor,qty])=>{colorDemand[cor]=(colorDemand[cor]||0)+qty;}));
+  const sortedCols=Object.entries(colDemand).sort((a,b)=>b[1]-a[1]);
+  const sortedColors=Object.entries(colorDemand).sort((a,b)=>b[1]-a[1]);
+  const maxCol=Math.max(1,...sortedCols.map(([,v])=>v));
+  const maxColor=Math.max(1,...sortedColors.map(([,v])=>v));
+  const atRisk=profiles.filter(({p})=>p.daysSince>60).length;
+  const engaged=profiles.filter(({p})=>p.daysSince<30&&p.totalSales>=3).length;
+  const avgTicketAll=profiles.length?profiles.reduce((s,{p})=>s+p.avgTicket,0)/profiles.length:0;
+
+  el.innerHTML=`
+  <div class="intel-grid" style="margin-bottom:1rem">
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--purple),var(--pink))">
+      <div class="intel-label">Clientes com compras</div>
+      <div class="intel-val">${profiles.length}</div>
+      <div class="intel-sub">de ${DB.clients.length} cadastrados</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--green),var(--teal))">
+      <div class="intel-label">Engajadas agora</div>
+      <div class="intel-val" style="color:var(--green)">${engaged}</div>
+      <div class="intel-sub">compraram nos últimos 30 dias</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--red),var(--amber))">
+      <div class="intel-label">Em risco</div>
+      <div class="intel-val" style="color:var(--red)">${atRisk}</div>
+      <div class="intel-sub">sem compras há 60+ dias</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--amber),var(--pink))">
+      <div class="intel-label">Ticket médio</div>
+      <div class="intel-val">${fmt(avgTicketAll)}</div>
+      <div class="intel-sub">por venda</div>
+    </div>
+  </div>
+
+  ${Object.keys(segCount).length?`<div class="intel-section">
+    <div class="intel-section-title">🏷️ Segmentos detectados <span>automático por comportamento</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${Object.entries(segCount).sort((a,b)=>b[1]-a[1]).map(([label,cnt])=>{const meta=profiles.flatMap(({p})=>p.segs).find(s=>s.label===label)||{color:'var(--pink)',bg:'var(--pinkbg)'};return`<span class="profile-chip" style="background:${meta.bg};color:${meta.color};border-color:${meta.color}40;font-size:12px;padding:5px 12px">${label} <strong>${cnt}</strong></span>`;}).join('')}</div>
+  </div>`:''}
+
+  <div class="intel-section">
+    <div class="intel-section-title">🗂️ O que as clientes mais compram <span>por coleção</span></div>
+    ${sortedCols.map(([col,qty])=>{const pct=Math.round(qty/maxCol*100);const col_color=COL_COLORS[col]||'var(--pink)';return`<div class="hmap-row"><div class="hmap-label" style="color:${col_color}">${COL_META_L[col]||col}</div><div class="hmap-bar-wrap"><div class="hmap-bar" style="width:${pct}%;background:${col_color}">${qty}</div></div><div class="hmap-val">${pct}%</div></div>`;}).join('')||'<div class="empty">Sem dados.</div>'}
+  </div>
+
+  <div class="intel-section">
+    <div class="intel-section-title">🎨 Preferência de cores <span>por todas as clientes</span></div>
+    ${sortedColors.map(([cor,qty])=>{const pct=Math.round(qty/maxColor*100);const meta=COLOR_KEYS.find(c=>c.label===cor)||{color:'var(--pink)'};return`<div class="hmap-row"><div class="hmap-label" style="color:${meta.color}">${cor}</div><div class="hmap-bar-wrap"><div class="hmap-bar" style="width:${pct}%;background:${meta.color}">${qty}</div></div><div class="hmap-val">${pct}%</div></div>`;}).join('')||'<div class="empty">Adicione cores nos nomes dos produtos.</div>'}
+  </div>
+
+  <div class="intel-section">
+    <div class="intel-section-title">👤 Perfil individual <span>clientes com histórico</span></div>
+    ${profiles.sort((a,b)=>b.p.totalSpent-a.p.totalSpent).slice(0,10).map(({c,p})=>`
+    <div class="crm-profile-bar" style="border-color:${p.daysSince>60?'var(--red)':p.daysSince<30?'var(--green)':'var(--purple)'}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div class="av" style="background:${avc(c.name)};width:32px;height:32px;font-size:11px">${ini(c.name)}</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">${c.name}</div>
+        <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">${p.totalSales} compra${p.totalSales!==1?'s':''} · ${fmt(p.totalSpent)} · ticket ~${fmt(p.avgTicket)}</div></div>
+        <div style="text-align:right;font-size:10px;font-family:var(--mono);color:${p.daysSince>60?'var(--red)':p.daysSince<14?'var(--green)':'var(--text3)'}">${p.daysSince===999?'nunca':p.daysSince+'d atrás'}</div>
+      </div>
+      <div class="profile-chips">
+        ${p.topCol?`<span class="profile-chip" style="background:${COL_COLORS[p.topCol]||'var(--pinkbg)'}20;color:${COL_COLORS[p.topCol]||'var(--pink)'};border-color:${COL_COLORS[p.topCol]||'var(--pink)'}40">${COL_META_L[p.topCol]||p.topCol}</span>`:''}
+        ${p.topColor?`<span class="profile-chip" style="background:${(COLOR_KEYS.find(c=>c.label===p.topColor[0])||{color:'var(--pink)'}).color}20;color:${(COLOR_KEYS.find(c=>c.label===p.topColor[0])||{color:'var(--pink)'}).color};border-color:${(COLOR_KEYS.find(c=>c.label===p.topColor[0])||{color:'var(--pink)'}).color}40">${p.topColor[0]}</span>`:''}
+        ${p.segs.map(s=>`<span class="profile-chip" style="background:${s.bg};color:${s.color};border-color:${s.color}40">${s.label}</span>`).join('')}
+        ${c.preferencias?`<span class="profile-chip" style="background:var(--bg3);color:var(--text2);border-color:var(--border)">📝 ${c.preferencias.slice(0,30)}</span>`:''}
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
 
 function _salesItems(){const out=[];DB.sales.forEach(v=>{const items=v.items||[{pid:v.productId,qty:v.qty||1,price:v.price||v.total,total:v.total,costUnit:v.costUnit,freightUnit:v.freightUnit}];items.forEach(i=>out.push({...i,sale:v}));});return out;}
 
@@ -1199,6 +1309,7 @@ function renderCRM(){const q=(document.getElementById('search-crm')||{value:''})
     <div class="crm-top"><div class="av" style="background:${avc(c.name)}">${ini(c.name)}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;color:var(--text)">${c.name}</div><div style="font-size:11px;color:var(--text3)">${[c.phone,c.city].filter(Boolean).join(' · ')||'Sem contato'}</div></div><select onchange="chgStage(${c.id},this.value)" style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--bg);color:var(--text);height:27px;font-family:var(--mono)">${STAGES.map(s=>`<option${s===c.stage?' selected':''}>${s}</option>`).join('')}</select></div>
     <div class="crm-stats"><div>Total gasto: <strong>${fmt(c.totalSpent||0)}</strong></div><div>Compras: <strong>${cs.length}</strong></div><div>Última compra: <strong style="color:var(--pink)">${fmt(lastAmt)}</strong></div>${cPendTotal>0?`<div style="color:var(--amber)">A receber: <strong>${fmt(cPendTotal)}</strong></div>`:''}${nextDue?`<div style="color:var(--amber)">Pagar em: <strong>${fmtD(nextDue+'T12:00:00')}</strong></div>`:''}</div>
     ${c.notes?`<div class="crm-notes">${c.notes}</div>`:''}
+    ${(()=>{const pf=getClientProfile(c.id);if(!pf)return'';const chips=[pf.topCol?`<span class="profile-chip" style="background:${COL_COLORS[pf.topCol]||'var(--pinkbg)'}20;color:${COL_COLORS[pf.topCol]||'var(--pink)'};border-color:${COL_COLORS[pf.topCol]||'var(--pink)'}30">${COL_META_L[pf.topCol]||pf.topCol}</span>`:'',pf.topColor?`<span class="profile-chip" style="background:${(COLOR_KEYS.find(x=>x.label===pf.topColor[0])||{color:'var(--pink)'}).color}20;color:${(COLOR_KEYS.find(x=>x.label===pf.topColor[0])||{color:'var(--pink)'}).color};border-color:${(COLOR_KEYS.find(x=>x.label===pf.topColor[0])||{color:'var(--pink)'}).color}30">${pf.topColor[0]}</span>`:'', ...pf.segs.map(s=>`<span class="profile-chip" style="background:${s.bg};color:${s.color};border-color:${s.color}40">${s.label}</span>`),c.preferencias?`<span class="profile-chip" style="background:var(--bg3);color:var(--text3);border-color:var(--border)">📝 ${c.preferencias.slice(0,28)}</span>`:''].filter(Boolean);return chips.length?`<div class="profile-chips">${chips.join('')}</div>`:'';})()}
     <div style="margin:8px 0 4px;font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.8px">Histórico de compras</div>
     <div style="margin-bottom:8px">${histItems}</div>
     ${suggested&&(DB.stock[suggested.id]||0)>0?`<div style="background:var(--purplebg);border-radius:8px;padding:6px 10px;margin-bottom:8px;font-size:11px;color:var(--purple)">💡 Indicar: <strong>${sh(suggestName,30)}</strong> — ${fmt(suggested.p)} · em estoque</div>`:''}
@@ -1206,8 +1317,32 @@ function renderCRM(){const q=(document.getElementById('search-crm')||{value:''})
   </div>`;}).join(''):`<div class="empty">Nenhum cliente ainda!</div>`;}
 function chgStage(id,s){const i=DB.clients.findIndex(c=>c.id===id);if(i>=0){DB.clients[i].stage=s;scheduleSave();renderCRM();}}
 function delClient(id){if(!confirm('Excluir?'))return;DB.clients=DB.clients.filter(c=>c.id!==id);scheduleSave();renderCRM();}
-function openClientModal(id,tab){const c=id?DB.clients.find(x=>x.id===id):null;const cs=c?DB.sales.filter(v=>v.clientId==c.id):[];const m=document.createElement('div');m.className='modal-bg';m.id='client-modal';const histHTML=cs.length?[...cs].reverse().map(v=>`<div class="history-item"><div style="display:flex;justify-content:space-between"><span style="font-weight:500;color:var(--text)">${v.items?v.items.map(i=>{const p=getP(i.pid);return sh(p?p.n:'?',16)+'×'+i.qty;}).join(', '):sh(getP(v.productId)?.n||'?',20)}</span><span style="color:var(--pink);font-family:var(--mono)">${fmt(v.total)}</span></div><div style="color:var(--text3);font-size:11px;font-family:var(--mono)">${fmtM(v.date)} · ${v.pay}</div></div>`).join(''):`<div class="empty">Nenhuma compra</div>`;m.innerHTML=`<div class="modal"><div class="modal-t">${c?c.name:'Novo cliente'}<button class="close-btn" onclick="closeModal()">×</button></div>${c?`<div class="tabs2"><button class="tab2${!tab?' active':''}" onclick="swModal(0,this)">Dados</button><button class="tab2${tab?' active':''}" onclick="swModal(1,this)">Histórico (${cs.length})</button></div>`:''}<div id="cm-dados" style="display:${tab?'none':'block'}"><div class="fr"><div class="fl"><label>Nome*</label><input id="cm-name" type="text" value="${c?c.name:''}" placeholder="Nome completo"></div><div class="fl"><label>WhatsApp</label><input id="cm-phone" type="text" value="${c?c.phone||'':''}" placeholder="42 99999-9999"></div></div><div class="fr"><div class="fl"><label>Cidade</label><input id="cm-city" type="text" value="${c?c.city||'':''}" placeholder="Cidade"></div><div class="fl"><label>Estágio</label><select id="cm-stage">${STAGES.map(s=>`<option${c&&c.stage===s?' selected':''}>${s}</option>`).join('')}</select></div></div><div class="fr"><div class="fl"><label>Aniversário</label><input id="cm-bday" type="date" value="${c?c.birthday||'':''}"></div><div class="fl"><label>Tags (vírgula)</label><input id="cm-tags" type="text" value="${c&&c.tags?c.tags.join(', '):''}" placeholder="vip, atacado..."></div></div><div class="fr fr1"><div class="fl"><label>Observações</label><textarea id="cm-notes">${c?c.notes||'':''}</textarea></div></div><button class="btn full" onclick="saveClient(${id||'null'})">✓ ${c?'Salvar':'Cadastrar'}</button></div>${c?`<div id="cm-hist" style="display:${tab?'block':'none'}">${histHTML}</div>`:''}</div>`;document.getElementById('modal-root').appendChild(m);}
-function swModal(t,btn){document.querySelectorAll('.tab2').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('cm-dados').style.display=t?'none':'block';const h=document.getElementById('cm-hist');if(h)h.style.display=t?'block':'none';}
+function openClientModal(id,tab){
+  const c=id?DB.clients.find(x=>x.id===id):null;
+  const cs=c?DB.sales.filter(v=>v.clientId==c.id):[];
+  const pf=c?getClientProfile(c.id):null;
+  const m=document.createElement('div');m.className='modal-bg';m.id='client-modal';
+  const histHTML=cs.length?[...cs].reverse().map(v=>`<div class="history-item"><div style="display:flex;justify-content:space-between"><span style="font-weight:500;color:var(--text)">${v.items?v.items.map(i=>{const p=getP(i.pid);return sh(p?p.n:'?',16)+'×'+i.qty;}).join(', '):sh(getP(v.productId)?.n||'?',20)}</span><span style="color:var(--pink);font-family:var(--mono)">${fmt(v.total)}</span></div><div style="color:var(--text3);font-size:11px;font-family:var(--mono)">${fmtM(v.date)} · ${v.pay}</div></div>`).join(''):`<div class="empty">Nenhuma compra</div>`;
+  const perfilHTML=pf?`
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Segmentos automáticos</div>
+      <div class="profile-chips">${pf.segs.length?pf.segs.map(s=>`<span class="profile-chip" style="background:${s.bg};color:${s.color};border-color:${s.color}40;font-size:12px;padding:5px 12px">${s.label}</span>`).join(''):'<span style="font-size:12px;color:var(--text3)">Nenhum segmento identificado ainda</span>'}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:var(--bg3);border-radius:10px;padding:10px"><div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">COLEÇÃO FAVORITA</div><div style="font-size:14px;font-weight:600;color:${COL_COLORS[pf.topCol]||'var(--text)'}">${pf.topCol?COL_META_L[pf.topCol]||pf.topCol:'—'}</div></div>
+      <div style="background:var(--bg3);border-radius:10px;padding:10px"><div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">COR FAVORITA</div><div style="font-size:14px;font-weight:600;color:${pf.topColor?(COLOR_KEYS.find(x=>x.label===pf.topColor[0])||{color:'var(--text)'}).color:'var(--text)'}">${pf.topColor?pf.topColor[0]:'—'}</div></div>
+      <div style="background:var(--bg3);border-radius:10px;padding:10px"><div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">TICKET MÉDIO</div><div style="font-size:14px;font-weight:600;color:var(--pink);font-family:var(--mono)">${fmt(pf.avgTicket)}</div></div>
+      <div style="background:var(--bg3);border-radius:10px;padding:10px"><div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">PEÇAS POR COMPRA</div><div style="font-size:14px;font-weight:600;color:var(--blue);font-family:var(--mono)">${pf.avgQty.toFixed(1)}</div></div>
+    </div>
+    ${Object.keys(pf.colCounts).length>1?`<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Mix de coleções compradas</div>${Object.entries(pf.colCounts).sort((a,b)=>b[1]-a[1]).map(([col,qty])=>{const pct=Math.round(qty/pf.totalQty*100);return`<div class="hmap-row"><div class="hmap-label" style="color:${COL_COLORS[col]||'var(--text3)'};font-size:11px">${COL_META_L[col]||col}</div><div class="hmap-bar-wrap" style="height:14px"><div class="hmap-bar" style="width:${pct}%;background:${COL_COLORS[col]||'var(--pink)'};font-size:9px">${qty}</div></div><div class="hmap-val" style="font-size:10px">${pct}%</div></div>`;}).join('')}</div>`:''}
+    <div><div style="font-size:11px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Preferências manuais</div><textarea id="cm-pref" style="width:100%;font-size:12px;padding:8px;border-radius:8px;border:1px solid var(--border2);background:var(--bg);color:var(--text);resize:vertical;min-height:60px;font-family:var(--font)" placeholder="Ex: gosta de rosa, tamanho M, prefere estampas grandes...">${c.preferencias||''}</textarea><button class="btn full" style="margin-top:8px" onclick="savePref(${id})">Salvar preferências</button></div>`
+  :`<div class="empty">Faça ao menos uma venda vinculada a esta cliente para ver o perfil automático.</div>`;
+  const tabs=c?`<div class="tabs2"><button class="tab2${tab===0||!tab?' active':''}" onclick="swModal(0,this)">Dados</button><button class="tab2${tab===1?' active':''}" onclick="swModal(1,this)">Histórico (${cs.length})</button><button class="tab2${tab===2?' active':''}" onclick="swModal(2,this)">👤 Perfil</button></div>`:'';
+  m.innerHTML=`<div class="modal" style="max-width:520px"><div class="modal-t">${c?c.name:'Novo cliente'}<button class="close-btn" onclick="closeModal()">×</button></div>${tabs}<div id="cm-dados" style="display:${tab&&tab!==0?'none':'block'}"><div class="fr"><div class="fl"><label>Nome*</label><input id="cm-name" type="text" value="${c?c.name:''}" placeholder="Nome completo"></div><div class="fl"><label>WhatsApp</label><input id="cm-phone" type="text" value="${c?c.phone||'':''}" placeholder="42 99999-9999"></div></div><div class="fr"><div class="fl"><label>Cidade</label><input id="cm-city" type="text" value="${c?c.city||'':''}" placeholder="Cidade"></div><div class="fl"><label>Estágio</label><select id="cm-stage">${STAGES.map(s=>`<option${c&&c.stage===s?' selected':''}>${s}</option>`).join('')}</select></div></div><div class="fr"><div class="fl"><label>Aniversário</label><input id="cm-bday" type="date" value="${c?c.birthday||'':''}"></div><div class="fl"><label>Tags (vírgula)</label><input id="cm-tags" type="text" value="${c&&c.tags?c.tags.join(', '):''}" placeholder="vip, atacado..."></div></div><div class="fr fr1"><div class="fl"><label>Observações</label><textarea id="cm-notes">${c?c.notes||'':''}</textarea></div></div><button class="btn full" onclick="saveClient(${id||'null'})">✓ ${c?'Salvar':'Cadastrar'}</button></div>${c?`<div id="cm-hist" style="display:${tab===1?'block':'none'}">${histHTML}</div><div id="cm-perf" style="display:${tab===2?'block':'none'}">${perfilHTML}</div>`:''}</div>`;
+  document.getElementById('modal-root').appendChild(m);
+}
+function savePref(id){const el=document.getElementById('cm-pref');if(!el)return;const i=DB.clients.findIndex(c=>c.id===id);if(i>=0){DB.clients[i].preferencias=el.value.trim();scheduleSave();renderCRM();}alert('Preferências salvas!');}
+function swModal(t,btn){document.querySelectorAll('.tab2').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('cm-dados').style.display=t===0?'block':'none';const h=document.getElementById('cm-hist');if(h)h.style.display=t===1?'block':'none';const p=document.getElementById('cm-perf');if(p)p.style.display=t===2?'block':'none';}
 function saveClient(id){const name=document.getElementById('cm-name').value.trim();if(!name){alert('Informe o nome');return;}const data={name,phone:document.getElementById('cm-phone').value.trim(),city:document.getElementById('cm-city').value.trim(),stage:document.getElementById('cm-stage').value,birthday:document.getElementById('cm-bday').value,tags:document.getElementById('cm-tags').value.split(',').map(t=>t.trim()).filter(Boolean),notes:document.getElementById('cm-notes').value.trim()};if(id){const i=DB.clients.findIndex(c=>c.id===id);if(i>=0)DB.clients[i]={...DB.clients[i],...data};}else DB.clients.push({id:Date.now(),...data,totalSpent:0,purchases:0,lastPurchase:null});scheduleSave();closeModal();renderCRM();buildCRMSelect();}
 function renderSuppliers(){const q=(document.getElementById('search-sup')||{value:''}).value.toLowerCase();const f=DB.suppliers.filter(s=>!q||s.name.toLowerCase().includes(q));document.getElementById('sup-list').innerHTML=f.length?f.map(s=>`<div class="sup-card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div class="av" style="background:${avc(s.name)}">${ini(s.name)}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;color:var(--text)">${s.name}</div><div style="font-size:11px;color:var(--text3)">${s.category||'Sem categoria'}</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;color:var(--text2);margin-bottom:8px">${s.phone?`<div>WhatsApp: <span style="color:var(--text)">${s.phone}</span></div>`:''}${s.site?`<div style="grid-column:1/-1">Site: <a href="https://${s.site}" target="_blank" style="color:var(--blue)">${s.site}</a></div>`:''}</div>${s.notes?`<div class="crm-notes">${s.notes}</div>`:''}<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-family:var(--mono);text-transform:uppercase">Pedidos</div>${(s.orders||[]).length?[...s.orders].reverse().map(o=>`<div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2);font-family:var(--mono)">${fmtD(o.date)} · ${sh(o.desc,20)}${o.value?' · '+fmt(o.value):''}</span><span class="badge ${o.status==='Recebido'?'bg-g':'bg-a'}" style="cursor:pointer" onclick="toggleOrder(${s.id},${o.id})">${o.status}</span></div>`).join(''):`<div style="font-size:11px;color:var(--text3)">Nenhum pedido</div>`}<button class="btn-sm" onclick="addOrder(${s.id})" style="margin-top:6px">+ Novo pedido</button></div><div style="display:flex;gap:5px;flex-wrap:wrap">${s.phone?`<a href="https://wa.me/55${s.phone.replace(/\D/g,'')}" style="text-decoration:none"><button class="btn-sm" style="color:var(--green)">💬 WhatsApp</button></a>`:''}<button class="btn-sm" onclick="openSupplierModal(${s.id})">✏ Editar</button><button class="btn-del" onclick="delSup(${s.id})">🗑</button></div></div>`).join(''):`<div class="empty">Nenhum fornecedor!</div>`;}
 function addOrder(sid){const desc=prompt('Descrição do pedido:');if(!desc)return;const val=prompt('Valor total (R$):');const i=DB.suppliers.findIndex(s=>s.id===sid);if(i<0)return;if(!DB.suppliers[i].orders)DB.suppliers[i].orders=[];DB.suppliers[i].orders.push({id:Date.now(),desc,value:val?parseFloat(val)||0:0,status:'Aguardando',date:new Date().toISOString()});scheduleSave();renderSuppliers();}
