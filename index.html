@@ -840,7 +840,7 @@ function renderCobrancas(){
       {t:'🎁 Desconto para acertar',s:'Para incentivar pagamento',m:'Oi! Que tal acertar hoje? Pix agora fechamos com R$5 de desconto! 😉'},
     ].map(({t,s,m})=>`<div class="msg-card"><div class="msg-card-info"><div class="msg-card-title">${t}</div><div class="msg-card-sub">${s}</div></div><button class="charge-btn charge-btn-copy" style="flex:none;min-width:80px" onclick="copyMsg('${m.replace(/'/g,"\\'")}')">📋 Copiar</button></div>`).join('')}`;
 }
-function markAllPaid(ids){if(!confirm(`Marcar ${ids.length} venda(s) como paga(s)?`))return;ids.forEach(id=>{const i=DB.sales.findIndex(s=>s.id===id);if(i>=0){DB.sales[i].pay='Pix';DB.sales[i].pending=false;}});scheduleSave();renderCobrancas();renderHome();}
+function markAllPaid(ids){if(!confirm(`Marcar ${ids.length} venda(s) como paga(s)?`))return;ids.forEach(id=>{const i=DB.sales.findIndex(s=>s.id===id);if(i<0)return;DB.sales[i].pay='Pix';DB.sales[i].pending=false;const cid=DB.sales[i].clientId;if(cid){const ci=DB.clients.findIndex(c=>c.id==cid);if(ci>=0){DB.clients[ci].totalSpent=(DB.clients[ci].totalSpent||0)+DB.sales[i].total;DB.clients[ci].purchases=(DB.clients[ci].purchases||0)+1;DB.clients[ci].lastPurchase=DB.sales[i].date;if(DB.clients[ci].stage==='Lead'||DB.clients[ci].stage==='Interessado')DB.clients[ci].stage='Cliente ativo';}}});scheduleSave();renderCobrancas();renderHome();}
 let _buyFilter='zero';
 function setBuyFilter(f,btn){_buyFilter=f;document.querySelectorAll('.buy-filter-tab').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');_renderBuyList();}
 function renderCompras(){
@@ -881,7 +881,9 @@ function renderCompras(){
   _renderBuyList();
 }
 function _renderBuyList(){
-  const all=ALL.map(p=>{const qty=DB.stock[p.id]||0,c=DB.costs[p.id]||0,fr=DB.freights[p.id]||0;return{p,qty,cost:c+fr,margin:p.p-c-fr};});
+  const soldPids=new Set();DB.sales.forEach(v=>{(v.items||[{pid:v.productId}]).forEach(i=>{if(i.pid)soldPids.add(i.pid);});});
+  const wasActive=p=>soldPids.has(p.id)||(DB.costs[p.id]>0)||!!getPhoto(p.id);
+  const all=ALL.filter(wasActive).map(p=>{const qty=DB.stock[p.id]||0,c=DB.costs[p.id]||0,fr=DB.freights[p.id]||0;return{p,qty,cost:c+fr,margin:p.p-c-fr};});
   const rows=all.filter(r=>_buyFilter==='zero'?r.qty===0:_buyFilter==='low'?r.qty===1:r.qty<=1).sort((a,b)=>a.qty-b.qty||b.margin-a.margin);
   const SUP_COL_MAP={nossa:'var(--pink)',bmoda:'var(--blue)',lamell:'var(--purple)',original:'var(--teal)'};
   document.getElementById('buy-list').innerHTML=rows.length?`<div class="buy-grid">${rows.map(r=>{
