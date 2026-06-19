@@ -641,13 +641,11 @@ async function loadData(){
   let sheetsData=null,localData=null;
   try{const d=await gsRead();if(d&&d.sales!==undefined)sheetsData=d;}catch(e){}
   try{const l=localStorage.getItem(LOCAL_KEY);if(l)localData=JSON.parse(l);}catch(e){}
-  // Usa o dado com mais vendas; em empate prefere Sheets
-  const sCount=sheetsData?.sales?.length??-1;
-  const lCount=localData?.sales?.length??-1;
-  if(lCount>sCount&&localData){DB={...DB,...localData};setSS('💾 Local (mais atual)','amber');}
+  const sAt=sheetsData?._savedAt??0;
+  const lAt=localData?._savedAt??0;
+  if(localData&&lAt>=sAt){DB={...DB,...localData};setSS(lAt>sAt?'💾 Local (mais atual)':'☁️ Sheets + Local','green');}
   else if(sheetsData){DB={...DB,...sheetsData};setSS('☁️ Sheets','green');}
   else if(localData){DB={...DB,...localData};setSS('💾 Local','amber');}
-  // Persiste o dado mais recente de volta no localStorage para garantia
   try{localStorage.setItem(LOCAL_KEY,JSON.stringify(DB));}catch(e){}
   ALL.forEach(p=>{
     if(DB.stock[p.id]===undefined)DB.stock[p.id]=1;
@@ -689,10 +687,11 @@ function showGSInfo(){
 // ─── SAVE ─────────────────────────────────────────────────────
 async function saveData(){
   setSS('Salvando...','amber');
+  DB._savedAt=Date.now();
   let ok=false;
-  try{ok=await gsWrite(DB);}catch(e){}
   try{localStorage.setItem(LOCAL_KEY,JSON.stringify(DB));}catch(e){}
-  if(ok)setSS('☁️ Sheets','green');else setSS('💾 Local','amber');
+  try{ok=await gsWrite(DB);}catch(e){}
+  if(ok)setSS('☁️ Sheets','green');else setSS('💾 Local — reabra para sincronizar','amber');
 }
 function scheduleSave(){if(saveTimer)clearTimeout(saveTimer);setSS('● Editando','pink');saveTimer=setTimeout(saveData,2000);}
 async function forceSave(){if(saveTimer)clearTimeout(saveTimer);await saveData();}
