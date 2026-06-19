@@ -209,6 +209,92 @@ tr:hover td{background:var(--bg3)}
 .cat-restock-btn{width:100%;margin-top:8px;padding:7px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-size:11px;font-family:var(--font);transition:all .15s}
 .cat-restock-btn:hover{background:var(--pinkbg);color:var(--pink);border-color:var(--pink)}
 
+/* COBRANÇAS CARDS */
+.charge-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px;transition:all .2s;position:relative;overflow:hidden}
+.charge-card:hover{border-color:var(--amber);box-shadow:0 4px 24px rgba(232,160,48,.08);transform:translateY(-1px)}
+.charge-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--cc-accent,var(--amber));border-radius:3px 0 0 3px}
+.charge-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.charge-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;font-family:var(--mono);flex-shrink:0;background:linear-gradient(135deg,var(--amber),var(--red))}
+.charge-name{font-size:14px;font-weight:600;color:var(--text);flex:1}
+.charge-amount{font-size:22px;font-weight:700;color:var(--amber);font-family:var(--mono)}
+.charge-amount-wrap{text-align:right}
+.charge-amount-label{font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase}
+.charge-items{font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.6;padding:8px 10px;background:var(--bg3);border-radius:8px;border-left:2px solid var(--border2)}
+.charge-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.charge-actions{display:flex;gap:6px;flex-wrap:wrap}
+.charge-btn{flex:1;min-width:100px;padding:8px 12px;border-radius:10px;border:1px solid;font-size:12px;cursor:pointer;font-family:var(--font);font-weight:500;transition:all .15s;text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.charge-btn-wa{background:rgba(37,211,102,.1);color:#25d366;border-color:rgba(37,211,102,.3)}
+.charge-btn-wa:hover{background:rgba(37,211,102,.2)}
+.charge-btn-copy{background:var(--amberbg);color:var(--amber);border-color:rgba(232,160,48,.3)}
+.charge-btn-copy:hover{background:rgba(232,160,48,.2)}
+.charge-btn-paid{background:var(--greenbg);color:var(--green);border-color:rgba(80,200,120,.3)}
+.charge-btn-paid:hover{background:rgba(80,200,120,.2)}
+.charge-day-badge{font-size:10px;font-family:var(--mono);padding:3px 8px;border-radius:99px;font-weight:600}
+.charge-section-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--mono);margin:16px 0 8px}
+.msg-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;transition:all .15s}
+.msg-card:hover{border-color:var(--border2)}
+.msg-card-info{flex:1}
+.msg-card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.msg-card-sub{font-size:11px;color:var(--text3)}
+
+/* COMPRAS CARDS */
+.buy-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all .2s;display:flex;flex-direction:column}
+.buy-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 6px 28px rgba(0,0,0,.15)}
+.buy-card.urgent{border-color:rgba(224,80,80,.4)}
+.buy-card.urgent:hover{border-color:var(--red)}
+.buy-card-img{aspect-ratio:1;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:32px;position:relative;overflow:hidden}
+.buy-card-img img{width:100%;height:100%;object-fit:cover}
+.buy-card-body{padding:12px 14px;flex:1;display:flex;flex-direction:column}
+.buy-card-supplier{margin-bottom:6px}
+.buy-card-name{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:8px;flex:1}
+.buy-card-prices{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;padding:8px;background:var(--bg3);border-radius:10px}
+.buy-card-price-label{font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px}
+.buy-card-price-val{font-size:14px;font-weight:700;font-family:var(--mono)}
+.buy-card-margin{width:100%;margin-bottom:10px;padding:6px 10px;border-radius:8px;font-size:12px;font-family:var(--mono);font-weight:600;text-align:center}
+.buy-card-btn{width:100%;padding:9px;border-radius:10px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .2s;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff}
+.buy-card-btn:hover{opacity:.9;transform:scale(1.02)}
+.buy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.buy-filter-tabs{display:flex;gap:4px;padding:4px;background:var(--bg2);border-radius:10px;border:1px solid var(--border);display:inline-flex}
+.buy-filter-tab{padding:5px 14px;border:none;background:transparent;font-size:12px;color:var(--text3);cursor:pointer;border-radius:7px;font-family:var(--font);transition:all .15s}
+.buy-filter-tab.active{background:var(--bg3);color:var(--text);font-weight:500}
+.buy-stock-pill{position:absolute;top:8px;left:8px;font-size:10px;font-family:var(--mono);font-weight:700;padding:3px 8px;border-radius:99px}
+
+/* INTEL */
+.intel-nav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:1rem;padding:4px;background:var(--bg2);border-radius:12px;border:1px solid var(--border)}
+.intel-tab{flex:1;min-width:80px;padding:7px 10px;border:none;background:transparent;font-size:12px;color:var(--text3);cursor:pointer;border-radius:9px;font-family:var(--font);transition:all .2s;white-space:nowrap}
+.intel-tab.active{background:linear-gradient(135deg,var(--pinkbg),var(--purplebg));color:var(--pink);font-weight:600;box-shadow:0 0 12px rgba(212,112,170,.15)}
+.intel-tab:hover:not(.active){background:var(--bg3);color:var(--text2)}
+.intel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:1rem}
+.intel-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px;position:relative;overflow:hidden;transition:all .2s}
+.intel-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.intel-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ig-accent,linear-gradient(90deg,var(--pink),var(--purple)))}
+.intel-label{font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.intel-val{font-size:28px;font-weight:700;color:var(--text);font-family:var(--mono);line-height:1}
+.intel-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.hmap-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.hmap-label{font-size:12px;color:var(--text2);min-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hmap-bar-wrap{flex:1;height:20px;background:var(--bg3);border-radius:6px;overflow:hidden;position:relative}
+.hmap-bar{height:100%;border-radius:6px;transition:width .6s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;padding-left:8px;font-size:10px;font-family:var(--mono);color:#fff;font-weight:600;min-width:2px}
+.hmap-val{font-size:11px;color:var(--text3);font-family:var(--mono);min-width:36px;text-align:right}
+.intel-section{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px}
+.intel-section-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.intel-section-title span{font-size:10px;color:var(--text3);font-weight:400;font-family:var(--mono)}
+.week-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.week-cell{background:var(--bg3);border-radius:10px;padding:10px 8px;text-align:center;border:1px solid var(--border);position:relative;overflow:hidden}
+.week-cell::after{content:'';position:absolute;inset:0;opacity:var(--wc-op,0);background:var(--wc-color,var(--pink));border-radius:10px;pointer-events:none}
+.week-cell-n{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;position:relative;z-index:1}
+.week-cell-v{font-size:16px;font-weight:700;color:var(--text);font-family:var(--mono);position:relative;z-index:1}
+.week-cell-s{font-size:10px;color:var(--text3);position:relative;z-index:1}
+.pay-donut-wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.pay-legend{display:flex;flex-direction:column;gap:6px;flex:1}
+.pay-leg-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
+.pay-leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.color-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:11px;font-family:var(--mono);border:1px solid transparent;margin:3px}
+.intel-insight{background:linear-gradient(135deg,rgba(212,112,170,.06),rgba(128,96,216,.06));border:1px solid rgba(212,112,170,.2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.5}
+.intel-insight strong{color:var(--pink)}
+.pay-delay-bar{height:8px;border-radius:4px;background:var(--bg3);margin-top:4px;overflow:hidden}
+.pay-delay-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--amber),var(--red))}
+
 /* LIST VIEW */
 .cat-list-row{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;transition:all .15s}
 .cat-list-row:hover{border-color:var(--border2)}
@@ -247,7 +333,7 @@ tr:hover td{background:var(--bg3)}
       <button class="tab" onclick="gt('estoque',this)">Estoque</button>
       <button class="tab" onclick="gt('cobrancas',this)">Cobranças</button>
       <button class="tab" onclick="gt('compras',this)">Comprar</button>
-      <button class="tab" onclick="gt('conferencia',this)">Conferência</button>
+      <button class="tab" onclick="gt('conferencia',this)">Inteligência</button>
       <button class="tab" onclick="gt('despesas',this)">Despesas</button>
       <button class="tab" onclick="gt('crm',this)">CRM</button>
       <button class="tab" onclick="gt('fornecedores',this)">Fornecedores</button>
@@ -342,19 +428,26 @@ tr:hover td{background:var(--bg3)}
 </div>
 
 <div class="sec" id="sec-cobrancas">
-  <div class="metrics" id="charge-metrics"></div>
-  <div class="card" style="margin-bottom:.9rem"><div class="ct">Central de cobrança</div><div id="charge-list"></div></div>
-  <div class="card"><div class="ct">Mensagens rápidas</div><div id="charge-scripts"></div></div>
+  <div id="charge-kpis"></div>
+  <div id="charge-list"></div>
+  <div id="charge-scripts"></div>
 </div>
 
 <div class="sec" id="sec-compras">
-  <div class="metrics" id="buy-metrics"></div>
-  <div class="card"><div class="ct">Reposição inteligente</div><div id="buy-list"></div></div>
+  <div id="buy-kpis"></div>
+  <div id="buy-filter-bar" style="margin-bottom:1rem"></div>
+  <div id="buy-list"></div>
 </div>
 
 <div class="sec" id="sec-conferencia">
-  <div class="card" style="margin-bottom:.9rem"><div class="ct">Conferência de estoque</div><div id="stock-check-summary"></div></div>
-  <div class="card"><div class="ct">Produtos para conferir</div><div id="stock-check-list"></div></div>
+  <div class="intel-nav">
+    <button class="intel-tab active" onclick="switchIntel('colecoes',this)">🗂 Coleções</button>
+    <button class="intel-tab" onclick="switchIntel('cores',this)">🎨 Cores</button>
+    <button class="intel-tab" onclick="switchIntel('pagamentos',this)">💳 Pagamentos</button>
+    <button class="intel-tab" onclick="switchIntel('calendario',this)">📅 Calendário</button>
+    <button class="intel-tab" onclick="switchIntel('estoque',this)">📦 Estoque</button>
+  </div>
+  <div id="intel-panel"></div>
 </div>
 
 <div class="sec" id="sec-despesas">
@@ -640,6 +733,7 @@ function renderHome(){
   document.getElementById('backup-panel').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between"><div><b>Backup completo pronto</b><small style="display:block;color:var(--text3);margin-top:4px">${DB.sales.length} vendas · ${DB.clients.length} clientes · ${ALL.reduce((a,p)=>a+(DB.stock[p.id]||0),0)} peças · ${Object.keys(DB.photos||{}).length} fotos</small></div><button class="btn" onclick="downloadBackup()">Baixar backup</button></div>`;
 }
 function saveMeta(){DB.meta.monthly=parseFloat(document.getElementById('meta-inp').value)||0;scheduleSave();renderHome();}
+function quickSale(pid){const p=getP(pid);if(!p)return;cartItems=[{pid:p.id,qty:1,price:p.p,cost:DB.costs[p.id]||0,freight:DB.freights[p.id]||0}];const btn=[...document.querySelectorAll('.tab')].find(b=>b.textContent.includes('Venda'));gt('venda',btn);}
 function addCartItem(){const p=ALL[0];cartItems.push({pid:p.id,qty:1,price:p.p,cost:DB.costs[p.id]||0,freight:DB.freights[p.id]||0});renderCart();}
 function renderCart(){const el=document.getElementById('cart-items');if(!el)return;el.innerHTML=cartItems.map((item,idx)=>`<div class="cart-row"><div class="fl"><label>Produto</label><select onchange="cartProdChange(${idx},this.value)">${ALL.map(p=>`<option value="${p.id}"${p.id==item.pid?' selected':''}>${sh(p.n,24)} [${SUP_L[p.supplier]}]</option>`).join('')}</select></div><div class="fl"><label>Qtd</label><input type="number" value="${item.qty}" min="1" step="1" onchange="cartUpdate(${idx},'qty',this.value)" oninput="cartUpdate(${idx},'qty',this.value)"></div><div class="fl"><label>Preço R$</label><input type="number" value="${item.price.toFixed(2)}" step="0.01" onchange="cartUpdate(${idx},'price',this.value)"></div><div class="fl"><label>Custo R$</label><input type="number" value="${item.cost.toFixed(2)}" step="0.01" onchange="cartUpdate(${idx},'cost',this.value)"></div><div class="fl"><label>Frete R$</label><input type="number" value="${(item.freight||0).toFixed(2)}" step="0.01" onchange="cartUpdate(${idx},'freight',this.value)"></div><div><button class="btn-del" onclick="removeCartItem(${idx})" style="height:32px;margin-top:14px">✕</button></div></div>`).join('');updateCartPreview();}
 function cartProdChange(idx,pid){pid=parseInt(pid);const p=getP(pid);if(!p)return;cartItems[idx]={pid,qty:1,price:p.p,cost:DB.costs[pid]||0,freight:DB.freights[pid]||0};renderCart();}
@@ -678,11 +772,379 @@ function copyMsg(txt){navigator.clipboard&&navigator.clipboard.writeText(txt);al
 function downloadFile(name,text){const a=document.createElement('a');a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(text);a.download=name;a.click();}
 function downloadBackup(){const now=new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');downloadFile(`backup_ce_reinvente_${now}.json`,JSON.stringify(DB,null,2));}
 function normalizeDataLabels(){let changed=false;DB.expenses.forEach(e=>{if((e.cat||'').includes('Reposi')){if(e.cat!=='Reposicao'){e.cat='Reposicao';changed=true;}if((e.desc||'').includes('Reposi')){e.desc='Reposicao La Mell';changed=true;}}});if(changed)scheduleSave();}
-function renderCobrancas(){const pend=DB.sales.filter(s=>s.pending).sort((a,b)=>(b.total||0)-(a.total||0));const total=pend.reduce((s,v)=>s+v.total,0);const clients={};pend.forEach(v=>{const k=v.client||'?';if(!clients[k])clients[k]={total:0,count:0,items:[]};clients[k].total+=v.total;clients[k].count++;clients[k].items.push(itemLabel(v,45));});document.getElementById('charge-metrics').innerHTML=`<div class="metric amber"><div class="ml">A receber</div><div class="mv">${fmt(total)}</div><div class="ms">${pend.length} vendas pendentes</div></div><div class="metric pink"><div class="ml">Clientes</div><div class="mv">${Object.keys(clients).length}</div><div class="ms">com cobrança aberta</div></div><div class="metric green"><div class="ml">Maior cobrança</div><div class="mv">${fmt(Math.max(0,...Object.values(clients).map(c=>c.total)))}</div><div class="ms">priorizar hoje</div></div>`;document.getElementById('charge-list').innerHTML=Object.entries(clients).sort((a,b)=>b[1].total-a[1].total).map(([name,c])=>{const msg=`Oi ${name.split(' ')[0]}! Tudo bem? Passando para lembrar do acerto da Cê Reinvente: ${fmt(c.total)}. Me avisa se prefere Pix ou dinheiro?`;const url=waUrl(name,msg);return `<div class="rowline"><div><b>${name}</b><small>${c.count} compra(s) · ${escText(c.items.slice(0,3).join(' | '))}</small></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><div class="money amber">${fmt(c.total)}</div><button class="btn-sm" onclick="copyMsg('${msg.replace(/'/g,"\\'")}')">Copiar</button>${url==='#'?'<span class="badge bg-r">sem telefone</span>':`<a class="btn-sm" target="_blank" href="${url}">WhatsApp</a>`}</div></div>`;}).join('')||'<div class="empty">Nada a receber.</div>';document.getElementById('charge-scripts').innerHTML=`<div class="rowline"><div><b>Cobrança gentil</b><small>Use para pendências recentes</small></div><button class="btn-sm" onclick="copyMsg('Oi! Tudo bem? Passando para lembrar do acerto da Cê Reinvente. Me avisa se prefere Pix ou dinheiro?')">Copiar</button></div><div class="rowline"><div><b>Confirmação de pagamento</b><small>Depois que a cliente pagar</small></div><button class="btn-sm" onclick="copyMsg('Recebi aqui, obrigada! Vou marcar como pago no sistema.')">Copiar</button></div>`;}
-function renderCompras(){const rows=ALL.map(p=>{const qty=DB.stock[p.id]||0,c=DB.costs[p.id]||0,fr=DB.freights[p.id]||0;return{p,qty,cost:c+fr,margin:p.p-c-fr,potential:p.p*(qty===0?1:0)}}).filter(r=>r.qty===0||r.qty<=1).sort((a,b)=>a.qty-b.qty||b.margin-a.margin);const zero=rows.filter(r=>r.qty===0),needCost=zero.reduce((s,r)=>s+r.cost,0),pot=zero.reduce((s,r)=>s+r.p.p,0);document.getElementById('buy-metrics').innerHTML=`<div class="metric red"><div class="ml">Zerados</div><div class="mv">${zero.length}</div><div class="ms">precisam decisão</div></div><div class="metric amber"><div class="ml">Compra estimada</div><div class="mv">${fmt(needCost)}</div><div class="ms">1 peça de cada zerado</div></div><div class="metric green"><div class="ml">Receita potencial</div><div class="mv">${fmt(pot)}</div><div class="ms">se repor e vender</div></div>`;document.getElementById('buy-list').innerHTML=rows.map(r=>`<div class="rowline"><div><b>${r.p.n}</b><small>${SUP_L[r.p.supplier]||r.p.supplier} · estoque ${r.qty} · custo ${fmt(r.cost)} · venda ${fmt(r.p.p)}</small></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="money green">+${fmt(r.margin)}</span><button class="btn-sm" onclick="startPurchase(${r.p.id})">Efetuar compra</button></div></div>`).join('')||'<div class="empty">Nenhuma reposição urgente.</div>';}
+function renderCobrancas(){
+  const pend=DB.sales.filter(s=>s.pending).sort((a,b)=>(b.total||0)-(a.total||0));
+  const total=pend.reduce((s,v)=>s+v.total,0);
+  const clients={};
+  pend.forEach(v=>{const k=v.client||'?';if(!clients[k])clients[k]={total:0,count:0,items:[],sales:[],oldest:v.date};clients[k].total+=v.total;clients[k].count++;clients[k].items.push(itemLabel(v,40));clients[k].sales.push(v);if(v.date&&v.date<clients[k].oldest)clients[k].oldest=v.date;});
+  const clientList=Object.entries(clients).sort((a,b)=>b[1].total-a[1].total);
+  const maxVal=clientList[0]?clientList[0][1].total:1;
+  const AVATARBG=['linear-gradient(135deg,#d470aa,#8060d8)','linear-gradient(135deg,#e08030,#d47000)','linear-gradient(135deg,#5080e8,#3060c8)','linear-gradient(135deg,#50c878,#30a858)','linear-gradient(135deg,#30c0a8,#208088)'];
+  document.getElementById('charge-kpis').innerHTML=`<div class="intel-grid" style="margin-bottom:1rem">
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--amber),var(--red))">
+      <div class="intel-label">Total a receber</div>
+      <div class="intel-val">${fmt(total)}</div>
+      <div class="intel-sub">${pend.length} venda${pend.length!==1?'s':''} pendente${pend.length!==1?'s':''}</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--pink),var(--purple))">
+      <div class="intel-label">Clientes devedores</div>
+      <div class="intel-val">${clientList.length}</div>
+      <div class="intel-sub">com cobrança aberta</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--red),var(--amber))">
+      <div class="intel-label">Maior cobrança</div>
+      <div class="intel-val">${fmt(clientList[0]?clientList[0][1].total:0)}</div>
+      <div class="intel-sub">${clientList[0]?clientList[0][0]:'—'}</div>
+    </div>
+  </div>`;
+  document.getElementById('charge-list').innerHTML=clientList.length?`
+    <div class="charge-section-title">Central de cobrança — ${clientList.length} cliente${clientList.length!==1?'s':''}</div>
+    ${clientList.map(([name,c],i)=>{
+      const msg=`Oi ${name.split(' ')[0]}! Tudo bem? Passando para lembrar do acerto da Cê Reinvente: ${fmt(c.total)}. Me avisa se prefere Pix ou dinheiro? 💕`;
+      const url=waUrl(name,msg);
+      const days=c.oldest?Math.round((Date.now()-new Date(c.oldest))/(86400000)):0;
+      const dayCol=days>14?'var(--red)':days>7?'var(--amber)':'var(--green)';
+      const urgency=Math.min(1,c.total/maxVal);
+      const initials=name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?';
+      const saleIds=c.sales.map(s=>s.id);
+      return`<div class="charge-card" style="--cc-accent:${dayCol}">
+        <div class="charge-top">
+          <div class="charge-avatar" style="background:${AVATARBG[i%AVATARBG.length]}">${initials}</div>
+          <div style="flex:1">
+            <div class="charge-name">${name}</div>
+            <div style="display:flex;gap:6px;align-items:center;margin-top:3px">
+              <span class="charge-day-badge" style="background:${dayCol}20;color:${dayCol}">${days}d atrás</span>
+              <span class="badge bg-a">${c.count} compra${c.count!==1?'s':''}</span>
+            </div>
+          </div>
+          <div class="charge-amount-wrap">
+            <div class="charge-amount-label">A receber</div>
+            <div class="charge-amount">${fmt(c.total)}</div>
+          </div>
+        </div>
+        <div class="charge-items">${escText(c.items.join(' · '))}</div>
+        <div style="height:3px;background:var(--bg3);border-radius:3px;margin-bottom:12px;overflow:hidden"><div style="height:100%;width:${Math.round(urgency*100)}%;background:linear-gradient(90deg,var(--amber),var(--red));border-radius:3px;transition:width .6s"></div></div>
+        <div class="charge-actions">
+          ${url!=='#'?`<a class="charge-btn charge-btn-wa" target="_blank" href="${url}">📱 WhatsApp</a>`:'<span class="charge-btn" style="background:var(--bg3);color:var(--text3);border-color:var(--border);cursor:default">sem telefone</span>'}
+          <button class="charge-btn charge-btn-copy" onclick="copyMsg('${msg.replace(/'/g,"\\'").replace(/`/g,'\\`')}')">📋 Copiar msg</button>
+          <button class="charge-btn charge-btn-paid" onclick="markAllPaid([${saleIds.join(',')}])">✓ Marcar pago</button>
+        </div>
+      </div>`;
+    }).join('')}`:'<div class="empty" style="padding:2rem;text-align:center">🎉 Nenhuma cobrança pendente!</div>';
+  document.getElementById('charge-scripts').innerHTML=`
+    <div class="charge-section-title">Mensagens rápidas</div>
+    ${[
+      {t:'💬 Cobrança gentil',s:'Para pendências recentes',m:'Oi! Tudo bem? Passando para lembrar do acerto da Cê Reinvente. Me avisa se prefere Pix ou dinheiro? 💕'},
+      {t:'⏰ Cobrança urgente',s:'Mais de 2 semanas',m:'Oi! Tudo bem? Ainda estou aguardando o acerto da Cê Reinvente. Pode me avisar quando consegue resolver? 🙏'},
+      {t:'✅ Confirmação',s:'Depois que pagar',m:'Recebi aqui, obrigada! Vou marcar como pago no sistema. 💚'},
+      {t:'🎁 Desconto para acertar',s:'Para incentivar pagamento',m:'Oi! Que tal acertar hoje? Pix agora fechamos com R$5 de desconto! 😉'},
+    ].map(({t,s,m})=>`<div class="msg-card"><div class="msg-card-info"><div class="msg-card-title">${t}</div><div class="msg-card-sub">${s}</div></div><button class="charge-btn charge-btn-copy" style="flex:none;min-width:80px" onclick="copyMsg('${m.replace(/'/g,"\\'")}')">📋 Copiar</button></div>`).join('')}`;
+}
+function markAllPaid(ids){if(!confirm(`Marcar ${ids.length} venda(s) como paga(s)?`))return;ids.forEach(id=>{const i=DB.sales.findIndex(s=>s.id===id);if(i>=0){DB.sales[i].pay='Pix';DB.sales[i].pending=false;}});scheduleSave();renderCobrancas();renderHome();}
+let _buyFilter='zero';
+function setBuyFilter(f,btn){_buyFilter=f;document.querySelectorAll('.buy-filter-tab').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');_renderBuyList();}
+function renderCompras(){
+  const soldPids=new Set();DB.sales.forEach(v=>{(v.items||[{pid:v.productId}]).forEach(i=>{if(i.pid)soldPids.add(i.pid);});});
+  const wasActive=p=>soldPids.has(p.id)||(DB.costs[p.id]>0)||!!getPhoto(p.id);
+  const all=ALL.filter(wasActive).map(p=>{const qty=DB.stock[p.id]||0,c=DB.costs[p.id]||0,fr=DB.freights[p.id]||0;return{p,qty,cost:c+fr,margin:p.p-c-fr};});
+  const zero=all.filter(r=>r.qty===0),low=all.filter(r=>r.qty===1),needCost=zero.reduce((s,r)=>s+r.cost,0),pot=zero.reduce((s,r)=>s+r.p.p,0);
+  document.getElementById('buy-kpis').innerHTML=`<div class="intel-grid" style="margin-bottom:1rem">
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--red),var(--amber))">
+      <div class="intel-label">Zerados</div>
+      <div class="intel-val" style="color:var(--red)">${zero.length}</div>
+      <div class="intel-sub">produtos sem estoque</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--amber),var(--pink))">
+      <div class="intel-label">Baixo estoque</div>
+      <div class="intel-val" style="color:var(--amber)">${low.length}</div>
+      <div class="intel-sub">última peça</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--green),var(--teal))">
+      <div class="intel-label">Receita potencial</div>
+      <div class="intel-val">${fmt(pot)}</div>
+      <div class="intel-sub">se repor os zerados</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--blue),var(--purple))">
+      <div class="intel-label">Investimento</div>
+      <div class="intel-val">${fmt(needCost)}</div>
+      <div class="intel-sub">1 peça de cada zerado</div>
+    </div>
+  </div>`;
+  document.getElementById('buy-filter-bar').innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <div class="buy-filter-tabs">
+      <button class="buy-filter-tab${_buyFilter==='zero'?' active':''}" onclick="setBuyFilter('zero',this)">🔴 Zerados (${zero.length})</button>
+      <button class="buy-filter-tab${_buyFilter==='low'?' active':''}" onclick="setBuyFilter('low',this)">🟡 Última peça (${low.length})</button>
+      <button class="buy-filter-tab${_buyFilter==='all'?' active':''}" onclick="setBuyFilter('all',this)">Todos críticos (${zero.length+low.length})</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">ordenado por margem ↓</div>
+  </div>`;
+  _renderBuyList();
+}
+function _renderBuyList(){
+  const all=ALL.map(p=>{const qty=DB.stock[p.id]||0,c=DB.costs[p.id]||0,fr=DB.freights[p.id]||0;return{p,qty,cost:c+fr,margin:p.p-c-fr};});
+  const rows=all.filter(r=>_buyFilter==='zero'?r.qty===0:_buyFilter==='low'?r.qty===1:r.qty<=1).sort((a,b)=>a.qty-b.qty||b.margin-a.margin);
+  const SUP_COL_MAP={nossa:'var(--pink)',bmoda:'var(--blue)',lamell:'var(--purple)',original:'var(--teal)'};
+  document.getElementById('buy-list').innerHTML=rows.length?`<div class="buy-grid">${rows.map(r=>{
+    const mg=r.p.p>0?Math.round((r.margin/r.p.p)*100):0;
+    const mgCol=mg>=40?'var(--green)':mg>=20?'var(--amber)':'var(--red)';
+    const mgBg=mg>=40?'var(--greenbg)':mg>=20?'var(--amberbg)':'var(--redbg)';
+    const photo=getPhoto(r.p.id);
+    const supCol=SUP_COL_MAP[r.p.supplier]||'var(--text3)';
+    const pillCol=r.qty===0?'var(--red)':'var(--amber)';
+    const pillBg=r.qty===0?'var(--redbg)':'var(--amberbg)';
+    const pillTxt=r.qty===0?'ZERADO':'ÚLTIMA';
+    return`<div class="buy-card${r.qty===0?' urgent':''}">
+      <div class="buy-card-img">
+        ${photo?`<img src="${photo}" alt="${r.p.n}">`:'<span>👕</span>'}
+        <span class="buy-stock-pill" style="background:${pillBg};color:${pillCol}">${pillTxt}</span>
+      </div>
+      <div class="buy-card-body">
+        <div class="buy-card-supplier"><span class="badge" style="background:${supCol}20;color:${supCol}">${SUP_L[r.p.supplier]||r.p.supplier}</span></div>
+        <div class="buy-card-name">${r.p.n}</div>
+        <div class="buy-card-prices">
+          <div><div class="buy-card-price-label">Custo</div><div class="buy-card-price-val" style="color:var(--text2)">${fmt(r.cost)}</div></div>
+          <div><div class="buy-card-price-label">Venda</div><div class="buy-card-price-val" style="color:var(--pink)">${fmt(r.p.p)}</div></div>
+        </div>
+        <div class="buy-card-margin" style="background:${mgBg};color:${mgCol}">margem ${mg}% · lucro ${fmt(r.margin)}</div>
+        <button class="buy-card-btn" onclick="startPurchase(${r.p.id})">🛒 Efetuar compra</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`:`<div class="empty" style="padding:2rem;text-align:center">✅ Nenhum produto nessa categoria!</div>`;
+}
 function startPurchase(pid){const p=getP(pid);if(!p)return;goTab('fornecedores');setTimeout(()=>{const q=document.getElementById('search-sup');if(q){q.value=SUP_L[p.supplier]||p.supplier;renderSuppliers();}alert(`Compra sugerida: ${p.n}\nFornecedor: ${SUP_L[p.supplier]||p.supplier}\nCusto estimado: ${fmt((DB.costs[p.id]||0)+(DB.freights[p.id]||0))}`);},80);}
-function renderConferencia(){if(!DB.physical)DB.physical={};const rows=ALL.map(p=>({p,sys:DB.stock[p.id]||0,phy:DB.physical[p.id]})).filter(r=>r.sys===0||r.sys<=1||r.phy!==undefined);const diff=rows.filter(r=>r.phy!==undefined&&Number(r.phy)!==Number(r.sys));document.getElementById('stock-check-summary').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap"><span class="badge bg-b">${rows.length} para conferir</span><span class="badge ${diff.length?'bg-r':'bg-g'}">${diff.length} divergências</span><button class="btn-sm" onclick="downloadStockCheck()">Baixar conferência</button></div>`;document.getElementById('stock-check-list').innerHTML=rows.map(r=>`<div class="rowline"><div><b>${r.p.n}</b><small>Sistema: ${r.sys} · ${SUP_L[r.p.supplier]||r.p.supplier}</small></div><div style="display:flex;gap:6px;align-items:center"><input type="number" min="0" value="${r.phy!==undefined?r.phy:''}" placeholder="real" onchange="savePhysicalStock(${r.p.id},this.value)" style="width:80px;font-size:12px;padding:6px;border-radius:8px;border:1px solid var(--border2);background:var(--bg);color:var(--text)"><span class="badge ${r.phy!==undefined&&Number(r.phy)!==Number(r.sys)?'bg-r':'bg-g'}">${r.phy!==undefined?(Number(r.phy)===Number(r.sys)?'ok':'diferença'):'pendente'}</span></div></div>`).join('')||'<div class="empty">Nada crítico para conferir.</div>';}
-function savePhysicalStock(pid,val){if(!DB.physical)DB.physical={};if(val==='')delete DB.physical[pid];else DB.physical[pid]=Number(val)||0;scheduleSave();renderConferencia();}
+let _intelTab='colecoes';
+function switchIntel(tab,btn){_intelTab=tab;document.querySelectorAll('.intel-tab').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderIntelPanel();}
+function renderConferencia(){_intelTab='colecoes';document.querySelectorAll('.intel-tab').forEach((b,i)=>{b.classList.toggle('active',i===0);});renderIntelPanel();}
+function renderIntelPanel(){const el=document.getElementById('intel-panel');if(!el)return;const fns={colecoes:intelColecoes,cores:intelCores,pagamentos:intelPagamentos,calendario:intelCalendario,estoque:intelEstoque};(fns[_intelTab]||intelColecoes)(el);}
+
+function _salesItems(){const out=[];DB.sales.forEach(v=>{const items=v.items||[{pid:v.productId,qty:v.qty||1,price:v.price||v.total,total:v.total,costUnit:v.costUnit,freightUnit:v.freightUnit}];items.forEach(i=>out.push({...i,sale:v}));});return out;}
+
+function intelColecoes(el){
+  const COL_META={personagens:{label:'👾 Personagens',color:'var(--purple)',bg:'var(--purplebg)'},religiosa:{label:'✝️ Religiosas',color:'var(--teal)',bg:'var(--tealbg)'},basica:{label:'⚫ Básicas',color:'var(--text3)',bg:'var(--bg3)'},brasil:{label:'🇧🇷 Brasil',color:'var(--green)',bg:'var(--greenbg)'},urbana:{label:'🏙️ Urbana',color:'var(--blue)',bg:'var(--bluebg)'},natureza:{label:'🌸 Natureza',color:'var(--pink)',bg:'var(--pinkbg)'},academia:{label:'💪 Academia',color:'var(--amber)',bg:'var(--amberbg)'}};
+  const items=_salesItems();
+  const colSales={},colRev={},colStock={};
+  items.forEach(i=>{const p=getP(i.pid);if(!p)return;const col=p.col||'basica';colSales[col]=(colSales[col]||0)+(i.qty||1);colRev[col]=(colRev[col]||0)+(i.total||0);});
+  ALL.forEach(p=>{const col=p.col||'basica';colStock[col]=(colStock[col]||0)+(DB.stock[p.id]||0);});
+  const sorted=Object.entries(colSales).sort((a,b)=>b[1]-a[1]);
+  const maxS=Math.max(1,...sorted.map(([,v])=>v));
+  const top=sorted[0]?COL_META[sorted[0][0]]?.label||sorted[0][0]:'—';
+  const total=sorted.reduce((s,[,v])=>s+v,0);
+  const insights=[];
+  if(sorted.length>=2){const[c1,v1]=sorted[0],[c2,v2]=sorted[1];const pct=Math.round((v1/(v1+v2))*100);insights.push(`<strong>${COL_META[c1]?.label||c1}</strong> está vendendo ${pct}% mais que <strong>${COL_META[c2]?.label||c2}</strong> — priorize reposição.`);}
+  const zeroCol=Object.entries(colStock).filter(([,v])=>v===0).map(([c])=>COL_META[c]?.label||c);
+  if(zeroCol.length)insights.push(`Coleção <strong>${zeroCol.join(', ')}</strong> está zerada no estoque — oportunidade perdida.`);
+  el.innerHTML=`
+  <div class="intel-grid">
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--pink),var(--purple))">
+      <div class="intel-label">Coleção campeã</div>
+      <div class="intel-val" style="font-size:18px">${top}</div>
+      <div class="intel-sub">${sorted[0]?sorted[0][1]:0} peças vendidas</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--teal),var(--blue))">
+      <div class="intel-label">Coleções ativas</div>
+      <div class="intel-val">${sorted.length}</div>
+      <div class="intel-sub">de ${Object.keys(COL_META).length} categorias</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--amber),var(--green))">
+      <div class="intel-label">Total vendido</div>
+      <div class="intel-val">${total}</div>
+      <div class="intel-sub">peças em todas coleções</div>
+    </div>
+  </div>
+  ${insights.length?`<div class="intel-section"><div class="intel-section-title">💡 Insights <span>baseado nas suas vendas</span></div>${insights.map(t=>`<div class="intel-insight">${t}</div>`).join('')}</div>`:''}
+  <div class="intel-section">
+    <div class="intel-section-title">📊 Ranking de vendas por coleção</div>
+    ${sorted.length?sorted.map(([col,qty])=>{const meta=COL_META[col]||{label:col,color:'var(--pink)',bg:'var(--pinkbg)'};const pct=Math.round((qty/maxS)*100);const rev=colRev[col]||0;const stk=colStock[col]||0;return`<div class="hmap-row"><div class="hmap-label" style="color:${meta.color}">${meta.label}</div><div class="hmap-bar-wrap"><div class="hmap-bar" style="width:${pct}%;background:${meta.color}">${qty}</div></div><div class="hmap-val">${fmt(rev)}</div><span class="badge" style="background:${meta.bg};color:${meta.color};min-width:48px;text-align:center">${stk} estq</span></div>`;}).join(''):`<div class="empty">Nenhuma venda registrada ainda.</div>`}
+  </div>
+  <div class="intel-section">
+    <div class="intel-section-title">📦 Estoque por coleção</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${Object.entries(COL_META).map(([k,m])=>{const s=colStock[k]||0;return`<span class="color-chip" style="background:${m.bg};color:${m.color};border-color:${m.color}40">${m.label} <strong>${s}</strong></span>`;}).join('')}</div>
+  </div>`;}
+
+function intelCores(el){
+  const COLOR_MAP=[
+    {keys:['preta','preto','black','escura'],label:'⚫ Preta/Escura',color:'#888',bg:'rgba(136,136,136,.15)'},
+    {keys:['branca','branco','white','clara'],label:'⚪ Branca/Clara',color:'#ddd',bg:'rgba(221,221,221,.12)'},
+    {keys:['rosa','pink'],label:'🌸 Rosa',color:'var(--pink)',bg:'var(--pinkbg)'},
+    {keys:['azul','blue','marinho'],label:'💙 Azul',color:'var(--blue)',bg:'var(--bluebg)'},
+    {keys:['verde','green'],label:'💚 Verde',color:'var(--green)',bg:'var(--greenbg)'},
+    {keys:['vermelha','vermelho','red','bordo'],label:'❤️ Vermelha',color:'var(--red)',bg:'var(--redbg)'},
+    {keys:['amarela','amarelo','yellow'],label:'💛 Amarela',color:'var(--amber)',bg:'var(--amberbg)'},
+    {keys:['roxa','roxo','lilas','lilás','purple'],label:'💜 Roxa',color:'var(--purple)',bg:'var(--purplebg)'},
+    {keys:['cinza','gray','grey'],label:'🩶 Cinza',color:'var(--teal)',bg:'var(--tealbg)'},
+  ];
+  function getColor(p){const n=(p.n+' '+(p.c||'')).toLowerCase();for(const c of COLOR_MAP){if(c.keys.some(k=>n.includes(k)))return c;}return null;}
+  const items=_salesItems();
+  const cSales={},cRev={},cStock={};
+  items.forEach(i=>{const p=getP(i.pid);if(!p)return;const c=getColor(p);if(!c)return;cSales[c.label]=(cSales[c.label]||0)+(i.qty||1);cRev[c.label]=(cRev[c.label]||0)+(i.total||0);});
+  ALL.forEach(p=>{const c=getColor(p);if(!c)return;cStock[c.label]=(cStock[c.label]||0)+(DB.stock[p.id]||0);});
+  const sorted=Object.entries(cSales).sort((a,b)=>b[1]-a[1]);
+  const maxS=Math.max(1,...sorted.map(([,v])=>v));
+  const colMeta=label=>COLOR_MAP.find(c=>c.label===label)||{color:'var(--pink)',bg:'var(--pinkbg)',label};
+  const insights=[];
+  if(sorted.length>=2){const[l1,v1]=sorted[0],[l2,v2]=sorted[1];insights.push(`Clientes preferem <strong>${l1}</strong> — ${v1} peças vs ${v2} de <strong>${l2}</strong>. Garanta reposição de ${l1}.`);}
+  const allColored=ALL.filter(p=>getColor(p));
+  if(allColored.length===0)insights.push(`Nenhum produto com cor identificada no nome. Adicione termos como "Preta", "Rosa", "Azul" no nome do produto para ativar este mapa.`);
+  el.innerHTML=`
+  <div class="intel-grid">
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--pink),var(--blue))">
+      <div class="intel-label">Cor mais vendida</div>
+      <div class="intel-val" style="font-size:18px">${sorted[0]?sorted[0][0]:'—'}</div>
+      <div class="intel-sub">${sorted[0]?sorted[0][1]:0} peças</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--purple),var(--pink))">
+      <div class="intel-label">Cores mapeadas</div>
+      <div class="intel-val">${sorted.length}</div>
+      <div class="intel-sub">cores com vendas</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--green),var(--teal))">
+      <div class="intel-label">Receita top cor</div>
+      <div class="intel-val" style="font-size:20px">${sorted[0]?fmt(cRev[sorted[0][0]]||0):'R$ 0'}</div>
+      <div class="intel-sub">${sorted[0]?sorted[0][0]:'—'}</div>
+    </div>
+  </div>
+  ${insights.length?`<div class="intel-section"><div class="intel-section-title">💡 Insights <span>preferência de cores</span></div>${insights.map(t=>`<div class="intel-insight">${t}</div>`).join('')}</div>`:''}
+  <div class="intel-section">
+    <div class="intel-section-title">🎨 Mapa de cores — vendas</div>
+    ${sorted.length?sorted.map(([label,qty])=>{const meta=colMeta(label);const pct=Math.round((qty/maxS)*100);return`<div class="hmap-row"><div class="hmap-label" style="color:${meta.color}">${label}</div><div class="hmap-bar-wrap"><div class="hmap-bar" style="width:${pct}%;background:${meta.color}">${qty}</div></div><div class="hmap-val">${fmt(cRev[label]||0)}</div><span class="badge" style="background:${meta.bg};color:${meta.color};min-width:48px;text-align:center">${cStock[label]||0} estq</span></div>`;}).join(''):`<div class="empty">Adicione cores nos nomes dos produtos para ver o mapa.</div>`}
+  </div>
+  <div class="intel-section">
+    <div class="intel-section-title">🧪 Mapa visual de cores</div>
+    <div style="display:flex;flex-wrap:wrap">${COLOR_MAP.map(c=>{const qty=cSales[c.label]||0;const op=qty>0?Math.max(0.3,qty/Math.max(...Object.values(cSales),1)):0.08;return`<span class="color-chip" style="background:${c.bg};color:${c.color};border-color:${c.color}${qty>0?'80':'20'};opacity:${op+0.4}">${c.label} ${qty>0?`<strong>${qty}</strong>`:''}</span>`;}).join('')}</div>
+  </div>`;}
+
+function intelPagamentos(el){
+  const sales=DB.sales;
+  const byPay={};sales.forEach(v=>{const k=v.pay||'Pix';byPay[k]=(byPay[k]||0)+1;});
+  const totalS=sales.length||1;
+  const pending=sales.filter(s=>s.pending);
+  const paid=sales.filter(s=>!s.pending);
+  const pendRate=Math.round((pending.length/totalS)*100);
+  const avgDelay=pending.reduce((s,v)=>{if(!v.date)return s;const d=(Date.now()-new Date(v.date))/(86400000);return s+d;},0)/(pending.length||1);
+  const weekRev=[0,0,0,0];paid.forEach(v=>{if(!v.date)return;const d=new Date(v.date);const w=Math.min(3,Math.floor((d.getDate()-1)/7));weekRev[w]+=v.total;});
+  const bestWeek=weekRev.indexOf(Math.max(...weekRev));
+  const PAY_COLORS={'Pix':'var(--teal)','Dinheiro':'var(--green)','Cartão':'var(--blue)','Crédito':'var(--purple)','Débito':'var(--blue)','A receber':'var(--amber)'};
+  const sortedPay=Object.entries(byPay).sort((a,b)=>b[1]-a[1]);
+  const insights=[];
+  if(pendRate>30)insights.push(`<strong>${pendRate}% das vendas</strong> estão pendentes — considere solicitar pagamento antecipado ou usar Pix na hora.`);
+  if(avgDelay>7)insights.push(`Clientes demoram em média <strong>${Math.round(avgDelay)} dias</strong> para pagar. Vendas há mais de 14 dias merecem cobrança ativa.`);
+  if(sortedPay[0])insights.push(`Forma de pagamento favorita: <strong>${sortedPay[0][0]}</strong> com ${sortedPay[0][1]} vendas (${Math.round(sortedPay[0][1]/totalS*100)}%).`);
+  el.innerHTML=`
+  <div class="intel-grid">
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--green),var(--teal))">
+      <div class="intel-label">Vendas pagas</div>
+      <div class="intel-val">${paid.length}</div>
+      <div class="intel-sub">${100-pendRate}% do total</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--amber),var(--red))">
+      <div class="intel-label">Pendentes</div>
+      <div class="intel-val" style="color:var(--amber)">${pending.length}</div>
+      <div class="intel-sub">${pendRate}% a receber · avg ${Math.round(avgDelay)}d</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--blue),var(--purple))">
+      <div class="intel-label">Melhor pagamento</div>
+      <div class="intel-val" style="font-size:18px">${sortedPay[0]?sortedPay[0][0]:'—'}</div>
+      <div class="intel-sub">${sortedPay[0]?sortedPay[0][1]:0} vendas</div>
+    </div>
+  </div>
+  ${insights.length?`<div class="intel-section"><div class="intel-section-title">💡 Insights <span>análise de recebimentos</span></div>${insights.map(t=>`<div class="intel-insight">${t}</div>`).join('')}</div>`:''}
+  <div class="intel-section">
+    <div class="intel-section-title">💳 Formas de pagamento</div>
+    ${sortedPay.map(([pay,cnt])=>{const pct=Math.round((cnt/totalS)*100);const col=PAY_COLORS[pay]||'var(--pink)';return`<div class="hmap-row"><div class="hmap-label" style="color:${col}">${pay}</div><div class="hmap-bar-wrap"><div class="hmap-bar" style="width:${pct}%;background:${col}">${cnt}</div></div><div class="hmap-val">${pct}%</div></div>`;}).join('')||'<div class="empty">Nenhuma venda ainda.</div>'}
+  </div>
+  <div class="intel-section">
+    <div class="intel-section-title">⏱️ Tempo médio de recebimento <span>vendas pendentes</span></div>
+    <div style="margin-bottom:8px">${pending.slice(0,5).map(v=>{const d=v.date?Math.round((Date.now()-new Date(v.date))/(86400000)):0;const col=d>14?'var(--red)':d>7?'var(--amber)':'var(--green)';return`<div class="rowline"><div><b>${v.client||'—'}</b><small>${fmt(v.total)} · ${v.pay||'?'}</small></div><span class="badge" style="background:${col}20;color:${col}">${d}d atrás</span></div>`;}).join('')||'<div class="empty">Nenhuma pendente.</div>'}</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Risco de inadimplência</div>
+    <div class="pay-delay-bar"><div class="pay-delay-fill" style="width:${Math.min(100,avgDelay/30*100)}%"></div></div>
+    <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:4px">${Math.round(avgDelay)} dias em média · meta: menos de 7 dias</div>
+  </div>`;}
+
+function intelCalendario(el){
+  const weekRev=[0,0,0,0],weekCnt=[0,0,0,0];
+  const dayRev=[0,0,0,0,0,0,0],dayCnt=[0,0,0,0,0,0,0];
+  const monthMap={};
+  DB.sales.filter(s=>!s.pending).forEach(v=>{
+    if(!v.date)return;
+    const d=new Date(v.date);
+    const w=Math.min(3,Math.floor((d.getDate()-1)/7));
+    weekRev[w]+=v.total;weekCnt[w]++;
+    const day=d.getDay();dayRev[day]+=v.total;dayCnt[day]++;
+    const mk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    if(!monthMap[mk])monthMap[mk]={rev:0,cnt:0};
+    monthMap[mk].rev+=v.total;monthMap[mk].cnt++;
+  });
+  const maxW=Math.max(1,...weekRev);
+  const maxD=Math.max(1,...dayRev);
+  const DAYS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const WEEKS=['1ª semana','2ª semana','3ª semana','4ª semana'];
+  const bestWeek=weekRev.indexOf(Math.max(...weekRev));
+  const bestDay=dayRev.indexOf(Math.max(...dayRev));
+  const months=Object.entries(monthMap).sort((a,b)=>a[0].localeCompare(b[0])).slice(-6);
+  const maxM=Math.max(1,...months.map(([,v])=>v.rev));
+  const insights=[];
+  if(weekRev[bestWeek]>0)insights.push(`A <strong>${WEEKS[bestWeek]}</strong> do mês concentra mais vendas — aumente stories e promoções nesse período.`);
+  if(dayRev[bestDay]>0)insights.push(`<strong>${DAYS[bestDay]}</strong> é o melhor dia — programe posts e abordagens ativas para esse dia.`);
+  el.innerHTML=`
+  <div class="intel-grid">
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--pink),var(--amber))">
+      <div class="intel-label">Melhor semana do mês</div>
+      <div class="intel-val" style="font-size:18px">${WEEKS[bestWeek]}</div>
+      <div class="intel-sub">${fmt(weekRev[bestWeek])} em vendas pagas</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--purple),var(--blue))">
+      <div class="intel-label">Melhor dia da semana</div>
+      <div class="intel-val" style="font-size:22px">${DAYS[bestDay]}</div>
+      <div class="intel-sub">${fmt(dayRev[bestDay])} em vendas pagas</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--teal),var(--green))">
+      <div class="intel-label">Meses analisados</div>
+      <div class="intel-val">${months.length}</div>
+      <div class="intel-sub">histórico de vendas</div>
+    </div>
+  </div>
+  ${insights.length?`<div class="intel-section"><div class="intel-section-title">💡 Insights <span>calendário de vendas</span></div>${insights.map(t=>`<div class="intel-insight">${t}</div>`).join('')}</div>`:''}
+  <div class="intel-section">
+    <div class="intel-section-title">📅 Semanas do mês <span>receita acumulada</span></div>
+    <div class="week-grid">${weekRev.map((rev,i)=>{const op=rev/maxW;const best=i===bestWeek;return`<div class="week-cell" style="--wc-color:var(--pink);--wc-op:${(op*.35).toFixed(2)};${best?'border-color:var(--pink)':''}"><div class="week-cell-n">${WEEKS[i]}</div><div class="week-cell-v" style="color:${best?'var(--pink)':'var(--text)'}">${fmt(rev)}</div><div class="week-cell-s">${weekCnt[i]} vendas</div></div>`;}).join('')}</div>
+  </div>
+  <div class="intel-section">
+    <div class="intel-section-title">📆 Dias da semana <span>padrão de compra</span></div>
+    <div style="display:flex;gap:4px;align-items:flex-end;height:80px;margin-bottom:8px">${dayRev.map((rev,i)=>{const h=rev>0?Math.round((rev/maxD)*64)+8:4;const best=i===bestDay;return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><div style="width:100%;height:${h}px;background:${best?'var(--pink)':'var(--border2)'};border-radius:4px 4px 0 0;transition:height .4s"></div><div style="font-size:9px;color:${best?'var(--pink)':'var(--text3)'};font-family:var(--mono)">${DAYS[i]}</div></div>`;}).join('')}</div>
+  </div>
+  ${months.length?`<div class="intel-section"><div class="intel-section-title">📈 Histórico mensal</div>${months.map(([mk,d])=>{const pct=Math.round((d.rev/maxM)*100);return`<div class="hmap-row"><div class="hmap-label">${mk}</div><div class="hmap-bar-wrap"><div class="hmap-bar" style="width:${pct}%;background:linear-gradient(90deg,var(--pink),var(--purple))">${d.cnt}v</div></div><div class="hmap-val">${fmt(d.rev)}</div></div>`;}).join('')}</div>`:''}
+  `;}
+
+function intelEstoque(el){
+  if(!DB.physical)DB.physical={};
+  const rows=ALL.map(p=>({p,sys:DB.stock[p.id]||0,phy:DB.physical[p.id]}));
+  const toCheck=rows.filter(r=>r.sys===0||r.sys<=1||r.phy!==undefined);
+  const diff=toCheck.filter(r=>r.phy!==undefined&&Number(r.phy)!==Number(r.sys));
+  const totalPcs=rows.reduce((s,r)=>s+r.sys,0);
+  el.innerHTML=`
+  <div class="intel-grid">
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--blue),var(--teal))">
+      <div class="intel-label">Total em estoque</div>
+      <div class="intel-val">${totalPcs}</div>
+      <div class="intel-sub">peças no sistema</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--amber),var(--red))">
+      <div class="intel-label">Para conferir</div>
+      <div class="intel-val">${toCheck.length}</div>
+      <div class="intel-sub">zerados ou críticos</div>
+    </div>
+    <div class="intel-card" style="--ig-accent:${diff.length?'linear-gradient(90deg,var(--red),var(--amber))':'linear-gradient(90deg,var(--green),var(--teal))'}">
+      <div class="intel-label">Divergências</div>
+      <div class="intel-val" style="color:${diff.length?'var(--red)':'var(--green)'}">${diff.length}</div>
+      <div class="intel-sub">${diff.length?'requer atenção':'tudo conferido'}</div>
+    </div>
+  </div>
+  <div class="intel-section">
+    <div class="intel-section-title">📦 Produtos para conferir <span style="margin-left:auto"><button class="btn-sm" onclick="downloadStockCheck()">Baixar CSV</button></span></div>
+    ${toCheck.map(r=>`<div class="rowline"><div><b>${r.p.n}</b><small>Sistema: ${r.sys} · ${SUP_L[r.p.supplier]||r.p.supplier}</small></div><div style="display:flex;gap:6px;align-items:center"><input type="number" min="0" value="${r.phy!==undefined?r.phy:''}" placeholder="real" onchange="savePhysicalStock(${r.p.id},this.value)" style="width:70px;font-size:12px;padding:5px 8px;border-radius:8px;border:1px solid var(--border2);background:var(--bg);color:var(--text)"><span class="badge ${r.phy!==undefined&&Number(r.phy)!==Number(r.sys)?'bg-r':'bg-g'}">${r.phy!==undefined?(Number(r.phy)===Number(r.sys)?'ok':'diferença'):'pendente'}</span></div></div>`).join('')||'<div class="empty">Nada crítico para conferir.</div>'}
+  </div>`;}
+
+function savePhysicalStock(pid,val){if(!DB.physical)DB.physical={};if(val==='')delete DB.physical[pid];else DB.physical[pid]=Number(val)||0;scheduleSave();if(_intelTab==='estoque')renderIntelPanel();}
 function downloadStockCheck(){const rows=ALL.map(p=>`${p.n};sistema=${DB.stock[p.id]||0};conferido=${DB.physical&&DB.physical[p.id]!==undefined?DB.physical[p.id]:''}`).join('\n');downloadFile('conferencia_estoque_ce_reinvente.csv',rows);}
 
 let stockView='grid';
@@ -693,7 +1155,7 @@ function renderStock(){const f=document.getElementById('stock-filter')?.value||'
     if(f.startsWith('col-'))return p.col===(f.replace('col-',''));return true;});
 if(stockView==='grid'){
   document.getElementById('stock-grid').className='catalog-grid';
-  document.getElementById('stock-grid').innerHTML=filtered.map(p=>{const qty=DB.stock[p.id]||0,c=DB.costs[p.id]||0,fr=DB.freights[p.id]||0;const qc=qty===0?'var(--red)':qty<=2?'var(--amber)':'var(--green)';const mg=p.p>0?Math.round(((p.p-c-fr)/p.p)*100):0;const mc=mg>=40?'bg-g':mg>=20?'bg-a':'bg-p';const photo=getPhoto(p.id);const imgHTML=photo?`<img src="${photo}" alt="${p.n}">`:`<div class="cat-img-placeholder"><span>👕</span><small>sem foto</small></div>`;return`<div class="cat-card${qty===0?' zero':''}"><div class="cat-img">${imgHTML}<button class="cat-img-upload" onclick="triggerPhotoUpload(${p.id})">📷 ${photo?'Trocar':'Adicionar'} foto</button></div><div class="cat-body"><div class="cat-supplier"><span class="badge ${SUP_C[p.supplier]||'bg-b'}">${SUP_L[p.supplier]}</span></div><div class="cat-name">${p.n}</div><div class="cat-sub" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${p.s} · ${p.c} <select onchange="updCol(${p.id},this.value)" style="font-size:10px;padding:1px 4px;border-radius:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--pink);height:20px;font-family:var(--mono)">${[['personagens','👾 Personagens'],['religiosa','✝️ Religiosas'],['basica','⚫ Básicas'],['brasil','🇧🇷 Brasil'],['urbana','🏙️ Urbana'],['natureza','🌸 Natureza'],['academia','💪 Academia']].map(([v,l])=>`<option value="${v}"${p.col===v?' selected':''}>${l}</option>`).join('')}</select></div><div class="cat-price">${fmt(p.p)}</div><div class="cat-margin ${mc}">margem ${mg}%</div><div class="cat-qty-row"><button class="cat-qty-btn" onclick="chgStk(${p.id},-1)">−</button><span class="cat-qty" style="color:${qc}">${qty}</span><button class="cat-qty-btn" onclick="chgStk(${p.id},1)">+</button><span style="font-size:11px;color:var(--text3);font-family:var(--mono)">${qty===0?'<span style="color:var(--red);font-weight:500">zerado</span>':qty===1?'última':qty+' un'}</span></div><div class="cat-costs"><div><div class="cat-cost-label">Custo</div><input class="cat-cost-inp" type="number" step="0.01" value="${c.toFixed(2)}" onchange="updCost(${p.id},'cost',this.value)"></div><div><div class="cat-cost-label">Frete</div><input class="cat-cost-inp" type="number" step="0.01" value="${fr.toFixed(2)}" onchange="updCost(${p.id},'freight',this.value)"></div></div><button class="cat-restock-btn" onclick="openRestockModal(${p.id})">+ Repor estoque</button></div></div>`;}).join('')||`<div class="empty">Nenhum produto</div>`;
+  document.getElementById('stock-grid').innerHTML=filtered.map(p=>{const qty=DB.stock[p.id]||0,c=DB.costs[p.id]||0,fr=DB.freights[p.id]||0;const qc=qty===0?'var(--red)':qty<=2?'var(--amber)':'var(--green)';const mg=p.p>0?Math.round(((p.p-c-fr)/p.p)*100):0;const mc=mg>=40?'bg-g':mg>=20?'bg-a':'bg-p';const photo=getPhoto(p.id);const imgHTML=photo?`<img src="${photo}" alt="${p.n}">`:`<div class="cat-img-placeholder"><span>👕</span><small>sem foto</small></div>`;return`<div class="cat-card${qty===0?' zero':''}"><div class="cat-img">${imgHTML}<button class="cat-img-upload" onclick="triggerPhotoUpload(${p.id})">📷 ${photo?'Trocar':'Adicionar'} foto</button></div><div class="cat-body"><div class="cat-supplier"><span class="badge ${SUP_C[p.supplier]||'bg-b'}">${SUP_L[p.supplier]}</span></div><div class="cat-name">${p.n}</div><div class="cat-sub" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${p.s} · ${p.c} <select onchange="updCol(${p.id},this.value)" style="font-size:10px;padding:1px 4px;border-radius:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--pink);height:20px;font-family:var(--mono)">${[['personagens','👾 Personagens'],['religiosa','✝️ Religiosas'],['basica','⚫ Básicas'],['brasil','🇧🇷 Brasil'],['urbana','🏙️ Urbana'],['natureza','🌸 Natureza'],['academia','💪 Academia']].map(([v,l])=>`<option value="${v}"${p.col===v?' selected':''}>${l}</option>`).join('')}</select></div><div class="cat-price">${fmt(p.p)}</div><div class="cat-margin ${mc}">margem ${mg}%</div><div class="cat-qty-row"><button class="cat-qty-btn" onclick="chgStk(${p.id},-1)">−</button><span class="cat-qty" style="color:${qc}">${qty}</span><button class="cat-qty-btn" onclick="chgStk(${p.id},1)">+</button><span style="font-size:11px;color:var(--text3);font-family:var(--mono)">${qty===0?'<span style="color:var(--red);font-weight:500">zerado</span>':qty===1?'última':qty+' un'}</span></div><div class="cat-costs"><div><div class="cat-cost-label">Custo</div><input class="cat-cost-inp" type="number" step="0.01" value="${c.toFixed(2)}" onchange="updCost(${p.id},'cost',this.value)"></div><div><div class="cat-cost-label">Frete</div><input class="cat-cost-inp" type="number" step="0.01" value="${fr.toFixed(2)}" onchange="updCost(${p.id},'freight',this.value)"></div></div><button class="cat-restock-btn" onclick="openRestockModal(${p.id})">+ Repor estoque</button>${qty>0?`<button class="cat-restock-btn" style="background:var(--pink);color:#fff;margin-top:4px" onclick="quickSale(${p.id})">💰 Efetuar venda</button>`:''}</div></div>`;}).join('')||`<div class="empty">Nenhum produto</div>`;
 }else{
   document.getElementById('stock-grid').className='catalog-list';
   document.getElementById('stock-grid').innerHTML=filtered.map(p=>{const qty=DB.stock[p.id]||0,c=DB.costs[p.id]||0,fr=DB.freights[p.id]||0;const qc=qty===0?'var(--red)':qty<=2?'var(--amber)':'var(--green)';const mg=p.p>0?Math.round(((p.p-c-fr)/p.p)*100):0;const mc=mg>=40?'var(--green)':mg>=20?'var(--amber)':'var(--pink)';const photo=getPhoto(p.id);return`<div class="cat-list-row"><div class="cat-list-thumb" onclick="triggerPhotoUpload(${p.id})" title="Clique para adicionar foto">${photo?`<img src="${photo}">`:'👕'}</div><div class="cat-list-info"><div class="cat-list-name">${p.n}</div><div class="cat-list-sub"><span class="badge ${SUP_C[p.supplier]||'bg-b'}" style="font-size:9px">${SUP_L[p.supplier]}</span> · ${p.s} · ${p.c}</div></div><div style="text-align:right;margin-right:12px"><div class="cat-list-price">${fmt(p.p)}</div><div class="cat-list-margin" style="color:${mc}">margem ${mg}%</div></div><div class="cat-list-qty"><button class="cat-list-qty-btn" onclick="chgStk(${p.id},-1)">−</button><span class="cat-list-qty-n" style="color:${qc}">${qty}</span><button class="cat-list-qty-btn" onclick="chgStk(${p.id},1)">+</button></div><button class="btn-sm" onclick="openRestockModal(${p.id})" style="white-space:nowrap;font-size:10px">Repor</button></div>`;}).join('')||`<div class="empty">Nenhum produto</div>`;
