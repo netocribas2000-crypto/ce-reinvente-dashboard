@@ -743,7 +743,7 @@ function renderHome(){
   const ps=Object.entries(profMap).sort((a,b)=>b[1]-a[1]).slice(0,6);const maxP=ps.length?Math.max(...ps.map(x=>Math.abs(x[1]))):1;
   document.getElementById('profit-chart').innerHTML=ps.length?ps.map(([id,d],i)=>{const p=getP(id);return`<div class="bar-r"><div class="bar-l">${sh(p?p.n:'?',20)}</div><div class="bar-t"><div class="bar-f" style="width:${Math.round((Math.abs(d)/maxP)*100)}%;background:${d>=0?BARS[i%BARS.length]:'linear-gradient(90deg,#e05050,#f08080)'}"></div></div><div class="bar-v" style="color:${d>=0?'var(--green)':'var(--red)'};font-family:var(--mono)">${fmt(d)}</div></div>`;}).join(''):`<div class="empty">Registre vendas para ver</div>`;
   document.getElementById('recent-expenses').innerHTML=([...DB.expenses].reverse().slice(0,4).map(e=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)"><div><div style="font-size:12px;color:var(--text)">${sh(e.desc,22)}</div><div style="font-size:11px;color:var(--text3)">${e.cat}</div></div><span style="font-size:12px;font-weight:500;color:var(--red);font-family:var(--mono)">${fmt(e.value)}</span></div>`).join(''))||`<div class="empty">Nenhuma despesa</div>`;
-  document.getElementById('backup-panel').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between"><div><b>Backup completo pronto</b><small style="display:block;color:var(--text3);margin-top:4px">${DB.sales.length} vendas · ${DB.clients.length} clientes · ${ALL.reduce((a,p)=>a+(DB.stock[p.id]||0),0)} peças · ${Object.keys(DB.photos||{}).length} fotos</small></div><button class="btn" onclick="downloadBackup()">Baixar backup</button></div>`;
+  document.getElementById('backup-panel').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:10px"><div><b>Backup completo</b><small style="display:block;color:var(--text3);margin-top:4px">${DB.sales.length} vendas · ${DB.clients.length} clientes · ${ALL.reduce((a,p)=>a+(DB.stock[p.id]||0),0)} peças · ${Object.keys(DB.photos||{}).length} fotos</small></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" onclick="downloadBackup()">↓ JSON</button><button class="btn" onclick="exportCSV()">↓ CSV</button><button class="btn" style="background:var(--purplebg);color:var(--purple);border:1px solid var(--purple)40" onclick="forceSave()">↑ Forçar sync</button></div></div><div style="border-top:1px solid var(--border);padding-top:10px"><div style="font-size:11px;color:var(--text3);margin-bottom:6px">Restaurar vendas de um CSV exportado anteriormente:</div><input type="file" id="csv-import-inp" accept=".csv" style="display:none" onchange="importCSV(this)"><button class="btn-sm" onclick="document.getElementById('csv-import-inp').click()">📂 Importar CSV de vendas</button><span id="csv-import-status" style="font-size:11px;color:var(--text3);margin-left:8px"></span></div>`;
 }
 function saveMeta(){DB.meta.monthly=parseFloat(document.getElementById('meta-inp').value)||0;scheduleSave();renderHome();}
 function quickSale(pid){const p=getP(pid);if(!p)return;cartItems=[{pid:p.id,qty:1,price:p.p,cost:DB.costs[p.id]||0,freight:DB.freights[p.id]||0}];const btn=[...document.querySelectorAll('.tab')].find(b=>b.textContent.includes('Venda'));gt('venda',btn);}
@@ -776,6 +776,53 @@ function saveSaleTotal(id,val){const i=DB.sales.findIndex(s=>s.id===id);if(i<0)r
 function saveSaleClient(id,val){const i=DB.sales.findIndex(s=>s.id===id);if(i>=0){DB.sales[i].client=val||'—';}scheduleSave();renderSalesTable();}
 function saveSaleProd(id,pid){const i=DB.sales.findIndex(s=>s.id===id);if(i<0)return;pid=parseInt(pid);const p=ALL.find(x=>x.id===pid);if(!p)return;const tot=DB.sales[i].total;DB.sales[i].items=[{pid,qty:1,price:tot,total:tot,costUnit:DB.costs[pid]||0,freightUnit:DB.freights[pid]||0}];scheduleSave();renderSalesTable();renderHome();}
 function saveSalePay(id,val){const i=DB.sales.findIndex(s=>s.id===id);if(i<0)return;const wasPending=DB.sales[i].pending;DB.sales[i].pay=val;DB.sales[i].pending=(val==='A receber');if(wasPending&&val!=='A receber'){recalcClientTotals();}forceSave();renderSalesTable();renderHome();}
+function importCSV(inp){
+  const file=inp.files[0];if(!file)return;
+  const st=document.getElementById('csv-import-status');
+  st.textContent='Lendo...';st.style.color='var(--amber)';
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const lines=e.target.result.split('\n').filter(l=>l.trim());
+      const rows=lines.slice(1).map(l=>{
+        const cols=[];let cur='',inQ=false;
+        for(const ch of l){if(ch==='"'){inQ=!inQ;}else if(ch===','&&!inQ){cols.push(cur);cur='';}else cur+=ch;}
+        cols.push(cur);
+        return cols.map(c=>c.replace(/^"|"$/g,'').trim());
+      }).filter(r=>r.length>=7&&r[0]);
+      let added=0,updated=0;
+      rows.forEach(([data,produto,cliente,total,custo,,pagamento,status])=>{
+        const tot=parseFloat(total)||0;
+        const isPending=status==='A receber'||pagamento==='A receber';
+        // Tenta encontrar venda existente pelo cliente + total + produto aproximado
+        const existing=DB.sales.find(s=>{
+          const sameClient=(s.client||'').toLowerCase()===cliente.toLowerCase();
+          const sameTotal=Math.abs(s.total-tot)<0.01;
+          const sameDate=s.date&&data&&fmtM(s.date)===data;
+          return sameClient&&sameTotal&&sameDate;
+        });
+        if(existing){
+          // Atualiza status de pagamento se mudou
+          if(existing.pending!==isPending){existing.pending=isPending;existing.pay=pagamento;updated++;}
+        }else{
+          // Cria nova venda
+          const pid=ALL.find(p=>produto.toLowerCase().includes(p.n.toLowerCase().slice(0,8)))?.id||ALL[0].id;
+          const dateP=data.split('/');
+          const dateISO=dateP.length===3?`20${dateP[2].length===2?dateP[2]:dateP[2].slice(2)}-${dateP[1]}-${dateP[0]}T12:00:00.000Z`:new Date().toISOString();
+          DB.sales.push({id:Date.now()+Math.random(),items:[{pid,qty:1,price:tot,total:tot,costUnit:parseFloat(custo)||0,freightUnit:0}],client:cliente,clientId:null,total:tot,discount:0,pay:pagamento,obs:'',pending:isPending,date:dateISO});
+          added++;
+        }
+      });
+      recalcClientTotals();
+      forceSave();
+      st.textContent=`✅ ${added} adicionadas · ${updated} atualizadas`;
+      st.style.color='var(--green)';
+      renderHome();
+    }catch(err){st.textContent='❌ Erro: '+err.message;st.style.color='var(--red)';}
+    inp.value='';
+  };
+  reader.readAsText(file,'utf-8');
+}
 function exportCSV(){const rows=[['Data','Produto','Cliente','Total','Custo','Lucro','Pagamento','Status']];DB.sales.forEach(v=>{const tc=tcSale(v),pr=v.total-tc;const label=v.items?v.items.map(i=>{const p=getP(i.pid);return(p?p.n:'?')+'×'+i.qty;}).join(' | '):(getP(v.productId)?.n||'?');rows.push([fmtM(v.date),label,v.client,v.total.toFixed(2),tc.toFixed(2),pr.toFixed(2),v.pay,v.pending?'A receber':'Pago']);});const csv=rows.map(r=>r.map(x=>`"${x}"`).join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='vendas_ce_reinvente.csv';a.click();}
 
 function escText(s){return String(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
