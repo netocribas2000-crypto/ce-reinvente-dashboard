@@ -1228,11 +1228,14 @@ function intelDRE(el){
     const sales=DB.sales.filter(s=>{const d=new Date(s.date);return!s.pending&&d.getFullYear()===y&&d.getMonth()===m;});
     const receita=sales.reduce((s,v)=>s+v.total,0);
     const cmv=sales.reduce((s,v)=>s+(v.items||[{pid:v.productId,qty:1,costUnit:v.costUnit||0,freightUnit:v.freightUnit||0}]).reduce((a,i)=>a+(((i.costUnit||0)+(i.freightUnit||0))*(i.qty||1)),0),0);
-    const despesas=DB.expenses.filter(e=>{const d=new Date(e.date);return d.getFullYear()===y&&d.getMonth()===m;});
+    const allDesp=DB.expenses.filter(e=>{const d=new Date(e.date);return d.getFullYear()===y&&d.getMonth()===m;});
+    const despesas=allDesp.filter(e=>!(e.cat||'').toLowerCase().includes('reposi'));
+    const reposicao=allDesp.filter(e=>(e.cat||'').toLowerCase().includes('reposi'));
     const totalDesp=despesas.reduce((s,e)=>s+e.value,0);
+    const totalRepos=reposicao.reduce((s,e)=>s+e.value,0);
     const lucroBruto=receita-cmv;
     const lucroLiq=lucroBruto-totalDesp;
-    return{receita,cmv,lucroBruto,totalDesp,lucroLiq,sales:sales.length,despesas};
+    return{receita,cmv,lucroBruto,totalDesp,lucroLiq,totalRepos,sales:sales.length,despesas,reposicao};
   }
   const cur=calcMonth(_dreYear,_dreMonth);
   const prevM=_dreMonth===0?11:_dreMonth-1,prevY=_dreMonth===0?_dreYear-1:_dreYear;
@@ -1264,7 +1267,7 @@ function intelDRE(el){
           {label:'💰 Receita bruta',val:cur.receita,color:'var(--text)',bold:true,delta:arrow('receita')},
           {label:'📦 (−) Custo das peças',val:-cur.cmv,color:'var(--red)',sub:true},
           {label:'📊 Lucro bruto',val:cur.lucroBruto,color:cur.lucroBruto>=0?'var(--green)':'var(--red)',bold:true,extra:`${mgBruta}% margem`,sep:true},
-          {label:'💸 (−) Despesas',val:-cur.totalDesp,color:'var(--red)',sub:true,delta:arrow('totalDesp','down')},
+          {label:'💸 (−) Despesas operacionais',val:-cur.totalDesp,color:'var(--red)',sub:true,delta:arrow('totalDesp','down')},
           {label:'✨ Lucro líquido',val:cur.lucroLiq,color:cur.lucroLiq>=0?'var(--green)':'var(--red)',bold:true,extra:`${mgLiq}% margem`,sep:true,big:true},
         ].map(r=>`
           <div style="display:flex;align-items:center;justify-content:space-between;padding:${r.big?'14px':'9px'} 12px;${r.sep?'border-top:2px solid var(--border);margin-top:4px;':''}${r.sub?'padding-left:24px;':''}background:${r.big?(cur.lucroLiq>=0?'var(--greenbg)':'var(--redbg)'):'transparent'};border-radius:${r.big?'10px':'0'}">
@@ -1275,9 +1278,19 @@ function intelDRE(el){
       </div>
     </div>
 
+    <!-- Reinvestimento em estoque -->
+    ${cur.totalRepos>0?`<div class="intel-section" style="border-color:var(--blue)40">
+      <div class="intel-section-title" style="color:var(--blue)">📦 Reinvestimento em estoque <span style="font-weight:400;font-size:11px">(não entra no P&L — vira CMV quando a peça vende)</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:13px;color:var(--text2)">${cur.reposicao.map(e=>e.desc).join(', ')}</span>
+        <span style="font-size:1.1rem;font-weight:700;color:var(--blue);font-family:var(--mono)">${fmt(cur.totalRepos)}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">Fluxo de caixa real: ${fmt(cur.lucroLiq)} lucro − ${fmt(cur.totalRepos)} reinvestido = <b style="color:${cur.lucroLiq-cur.totalRepos>=0?'var(--green)':'var(--amber)'}">${fmt(cur.lucroLiq-cur.totalRepos)} no bolso</b></div>
+    </div>`:''}
+
     <!-- Despesas do mês por categoria -->
     ${cur.totalDesp>0?`<div class="intel-section">
-      <div class="intel-section-title">💸 Despesas de ${MONTHS[_dreMonth]}</div>
+      <div class="intel-section-title">💸 Despesas operacionais de ${MONTHS[_dreMonth]}</div>
       <div style="display:flex;flex-direction:column;gap:6px">
         ${Object.entries(bycat).sort((a,b)=>b[1]-a[1]).map(([cat,val])=>{
           const pct=Math.round((val/cur.totalDesp)*100);
