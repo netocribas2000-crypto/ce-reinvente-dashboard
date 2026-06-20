@@ -595,6 +595,20 @@ const LAMELL=[
   {id:330,n:"Tshirt Nossa Senhora Das Graças",c:"Bege Areia",s:"M",p:59.90,cost:25.63,freight:LF,supplier:'lamell',col:'religiosas'},
   {id:331,n:"Tshirt Directed By Jesus",c:"Rosa Pink",s:"GG",p:59.90,cost:25.63,freight:LF,supplier:'lamell',col:'religiosas'},
   {id:332,n:"Tshirt Jesus",c:"Stone Green",s:"G",p:59.90,cost:25.63,freight:LF,supplier:'lamell',col:'religiosas'},
+  {id:333,n:"Tshirt Abençoada",c:"Rosa Master Pink",s:"G2",p:59.90,cost:29.98,freight:LF,supplier:'lamell',col:'religiosas'},
+  {id:334,n:"Tshirt Infantil Lilo E Stitch Ohana",c:"Branco",s:"8",p:49.90,cost:22.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:335,n:"Tshirt Infantil Stitch Ohana Mens Family",c:"Bege Areia",s:"10",p:49.90,cost:22.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:336,n:"Tshirt Bolsinho Winnie The Pooh",c:"Marrom Ebony",s:"P",p:59.90,cost:26.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:337,n:"Tshirt Infantil Superfilho",c:"Azul Royal",s:"12",p:49.90,cost:22.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:338,n:"Tshirt Pluto Snack",c:"Verde Prisma",s:"P",p:59.90,cost:23.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:339,n:"Tshirt Bolsinho Scooby Doo Salsicha",c:"Verde Folha",s:"G",p:59.90,cost:26.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:340,n:"Tshirt Bolsinho Mickey Amigos Montanha",c:"Amarelo Saffron",s:"M",p:59.90,cost:26.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:341,n:"Tshirt Infantil Personagens Disney Gola",c:"Off White",s:"12",p:49.90,cost:22.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:342,n:"Tshirt Infantil Garfield",c:"Laranja Influencer",s:"12",p:49.90,cost:22.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:343,n:"Tshirt Stitch",c:"Azul Skyway",s:"G",p:59.90,cost:23.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:344,n:"Tshirt Turma Do Bob Esponja",c:"Flash Yellow",s:"GG",p:59.90,cost:28.58,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:345,n:"Tshirt Patollino Perna Longa Looney Tunes",c:"Verde Selva",s:"G1",p:59.90,cost:29.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:346,n:"Tshirt Infantil Roar Lion King",c:"Azul Light Navy",s:"10",p:49.90,cost:22.98,freight:LF,supplier:'lamell',col:'personagens'},
 ];
 const ALL=[...ORIG,...NOSSA,...BMODA,...LAMELL];
 const SUP_C={nossa:'bg-a',bmoda:'bg-v',lamell:'bg-p',original:'bg-b'};
@@ -676,6 +690,7 @@ async function loadData(){
   })();
   normalizeDataLabels();
   recalcClientTotals();
+  applyPendingOrders();
   await saveData();
   renderHome();
 }
@@ -755,6 +770,24 @@ function removeCartItem(idx){if(cartItems.length===1)return;cartItems.splice(idx
 function updateCartPreview(){const disc=parseFloat((document.getElementById('inp-disc')||{value:0}).value)||0;const tr=cartItems.reduce((s,i)=>s+i.price*(i.qty||1),0)-disc;const tc=cartItems.reduce((s,i)=>s+(i.cost+i.freight)*(i.qty||1),0);const pr=tr-tc;const mg=tr>0?Math.round((pr/tr)*100):0;const el=document.getElementById('cart-preview');if(el)el.innerHTML=`<span>Total: <strong style="color:var(--text)">${fmt(tr)}</strong></span><span>Custo: <strong style="color:var(--text)">${fmt(tc)}</strong></span><span style="color:${pr>=0?'var(--green)':'var(--red)'};font-weight:500">Lucro: ${fmt(pr)} (${mg}%)</span>`;}
 function buildCRMSelect(){const sel=document.getElementById('sel-crm-client');if(!sel)return;sel.innerHTML=`<option value="">— Selecionar —</option>`+DB.clients.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');sel.onchange=function(){if(this.value){const c=DB.clients.find(x=>x.id==this.value);if(c)document.getElementById('inp-client').value=c.name;}};}
 function registerSale(){const crmId=document.getElementById('sel-crm-client').value;let cn=document.getElementById('inp-client').value.trim();const pay=document.getElementById('sel-pay').value;const disc=parseFloat(document.getElementById('inp-disc').value)||0;const obs=document.getElementById('inp-obs').value.trim();if(!cn&&crmId){const c=DB.clients.find(x=>x.id==crmId);if(c)cn=c.name;}for(const i of cartItems){if((DB.stock[i.pid]||0)<(i.qty||1)){const p=getP(i.pid);alert('Estoque insuficiente: '+sh(p?p.n:'?',20));return;}}const total=cartItems.reduce((s,i)=>s+i.price*(i.qty||1),0)-disc;const items=cartItems.map(i=>({pid:i.pid,qty:i.qty||1,price:i.price,total:i.price*(i.qty||1),costUnit:i.cost,freightUnit:i.freight}));cartItems.forEach(i=>{DB.costs[i.pid]=i.cost;DB.freights[i.pid]=i.freight;DB.stock[i.pid]=Math.max(0,(DB.stock[i.pid]||0)-(i.qty||1));});const pending=pay==='A receber';const now=new Date().toISOString();DB.sales.push({id:Date.now(),items,client:cn||'—',clientId:crmId||null,total,discount:disc,pay,obs,pending,date:now});if(crmId&&!pending){const ci=DB.clients.findIndex(c=>c.id==crmId);if(ci>=0){DB.clients[ci].totalSpent=(DB.clients[ci].totalSpent||0)+total;DB.clients[ci].purchases=(DB.clients[ci].purchases||0)+1;DB.clients[ci].lastPurchase=now;if(DB.clients[ci].stage==='Lead'||DB.clients[ci].stage==='Interessado')DB.clients[ci].stage='Cliente ativo';}}scheduleSave();const p0=ALL[0];cartItems=[{pid:p0.id,qty:1,price:p0.p,cost:DB.costs[p0.id]||0,freight:DB.freights[p0.id]||0}];document.getElementById('inp-client').value='';document.getElementById('inp-disc').value='0';document.getElementById('inp-obs').value='';renderCart();renderSalesTable();alert('Venda registrada!'+(pending?' (A receber)':''));}
+function applyPendingOrders(){
+  if(!DB.meta)DB.meta={};
+  if(!DB.meta.appliedOrders)DB.meta.appliedOrders=[];
+  const ORDERS=[
+    {id:'lamell_20260620',date:'2026-06-20',desc:'Reposição La Mell',value:377.05,
+     items:[333,334,335,336,337,338,339,340,341,342,343,344,345,346]}
+  ];
+  let changed=false;
+  ORDERS.forEach(order=>{
+    if(DB.meta.appliedOrders.includes(order.id))return;
+    if(!DB.expenses)DB.expenses=[];
+    DB.expenses.push({id:Date.now()+Math.random(),date:order.date,cat:'Reposição',desc:order.desc,value:order.value});
+    order.items.forEach(pid=>{DB.stock[pid]=(DB.stock[pid]||0)+1;});
+    DB.meta.appliedOrders.push(order.id);
+    changed=true;
+  });
+  return changed;
+}
 function recalcClientTotals(){DB.clients.forEach(c=>{const sales=DB.sales.filter(v=>v.clientId==c.id);const paid=sales.filter(v=>!v.pending);c.totalSpent=paid.reduce((s,v)=>s+v.total,0);c.purchases=sales.length;const last=[...sales].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];c.lastPurchase=last?last.date:c.lastPurchase||null;if(paid.length>0&&(c.stage==='Lead'||c.stage==='Interessado'))c.stage='Cliente ativo';});scheduleSave();}
 function renderSalesTable(){buildCRMSelect();const q=(document.getElementById('search-sales')||{value:''}).value.toLowerCase();const ps=document.getElementById('filter-pay-status')?.value||'';const filtered=[...DB.sales].reverse().filter(v=>{const mQ=!q||(v.client&&v.client.toLowerCase().includes(q))||(v.items&&v.items.some(i=>{const p=getP(i.pid);return p&&p.n.toLowerCase().includes(q);}));const mP=!ps||(ps==='paid'&&!v.pending)||(ps==='pending'&&v.pending);return mQ&&mP;});document.getElementById('sales-tbody').innerHTML=filtered.length?filtered.map(v=>{const tc=tcSale(v),pr=v.total-tc;const label=v.items?v.items.map(i=>{const p=getP(i.pid);return sh(p?p.n:'?',14)+'×'+i.qty;}).join(', '):sh(getP(v.productId)?.n||'?',18);const pb=v.pending?`<button class="btn-green" onclick="markPaid(${v.id})" style="font-size:10px">✓ Recebido</button>`:'';
 const dateVal=v.date?v.date.substring(0,10):'';
@@ -936,12 +969,14 @@ function renderCompras(){
       <button class="buy-filter-tab${_buyFilter==='zero'?' active':''}" onclick="setBuyFilter('zero',this)">🔴 Zerados (${zero.length})</button>
       <button class="buy-filter-tab${_buyFilter==='low'?' active':''}" onclick="setBuyFilter('low',this)">🟡 Última peça (${low.length})</button>
       <button class="buy-filter-tab${_buyFilter==='all'?' active':''}" onclick="setBuyFilter('all',this)">Todos críticos (${zero.length+low.length})</button>
+      <button class="buy-filter-tab${_buyFilter==='smart'?' active':''}" onclick="setBuyFilter('smart',this)">🧠 Pedido Inteligente</button>
     </div>
-    <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">ordenado por margem ↓</div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">${_buyFilter==='smart'?'análise de velocidade e margem':'ordenado por margem ↓'}</div>
   </div>`;
   _renderBuyList();
 }
 function _renderBuyList(){
+  if(_buyFilter==='smart'){renderPedidoInteligente();return;}
   const soldPids=new Set();DB.sales.forEach(v=>{(v.items||[{pid:v.productId}]).forEach(i=>{if(i.pid)soldPids.add(i.pid);});});
   const wasActive=p=>soldPids.has(p.id)||(DB.costs[p.id]>0)||!!getPhoto(p.id);
   const all=ALL.filter(wasActive).map(p=>{const qty=DB.stock[p.id]||0,c=DB.costs[p.id]||0,fr=DB.freights[p.id]||0;return{p,qty,cost:c+fr,margin:p.p-c-fr};});
@@ -975,6 +1010,151 @@ function _renderBuyList(){
   }).join('')}</div>`:`<div class="empty" style="padding:2rem;text-align:center">✅ Nenhum produto nessa categoria!</div>`;
 }
 function startPurchase(pid){const p=getP(pid);if(!p)return;goTab('fornecedores');setTimeout(()=>{const q=document.getElementById('search-sup');if(q){q.value=SUP_L[p.supplier]||p.supplier;renderSuppliers();}alert(`Compra sugerida: ${p.n}\nFornecedor: ${SUP_L[p.supplier]||p.supplier}\nCusto estimado: ${fmt((DB.costs[p.id]||0)+(DB.freights[p.id]||0))}`);},80);}
+const COL_LABEL_MAP={personagens:'👾 Personagens',religiosa:'✝️ Religiosas',religiosas:'✝️ Religiosas',basica:'⚫ Básicas',basicas:'⚫ Básicas',natureza:'🌸 Natureza',brasil:'🇧🇷 Brasil',urbana:'🏙️ Urbana',academia:'💪 Academia'};
+const COL_CLR_MAP={personagens:'var(--purple)',religiosa:'var(--teal)',religiosas:'var(--teal)',basica:'var(--text2)',basicas:'var(--text2)',natureza:'var(--pink)',brasil:'var(--green)',urbana:'var(--blue)',academia:'var(--amber)'};
+function _buildVelocityData(){
+  const allS=DB.sales;if(!allS.length)return null;
+  const firstDate=new Date(allS.reduce((min,s)=>s.date<min?s.date:min,allS[0].date));
+  const weeksActive=Math.max(1,(Date.now()-firstDate)/(7*86400000));
+  const soldMap={};
+  allS.forEach(s=>{(s.items||[{pid:s.productId,qty:1}]).forEach(i=>{const pid=String(i.pid||'');if(pid)soldMap[pid]=(soldMap[pid]||0)+(i.qty||1);});});
+  const metrics=ALL.map(p=>{
+    const sold=soldMap[String(p.id)]||0;
+    const stock=DB.stock[p.id]||0;
+    const cost=(DB.costs[p.id]||p.cost||0)+(DB.freights[p.id]||p.freight||0);
+    const margin=p.p-cost;
+    const velocity=sold/weeksActive;
+    const daysOfStock=velocity>0?(stock/velocity*7):(stock>0?999:0);
+    const urgency=daysOfStock<7?3:daysOfStock<14?2:1;
+    const score=margin*velocity*urgency;
+    return{p,sold,stock,cost,margin,velocity,daysOfStock,urgency,score};
+  }).filter(m=>m.sold>0||m.stock>0);
+  return{metrics,weeksActive,soldMap};
+}
+function renderPedidoInteligente(){
+  const el=document.getElementById('buy-list');
+  const data=_buildVelocityData();
+  if(!data){el.innerHTML='<div class="empty" style="padding:2rem;text-align:center">📊 Sem dados de vendas suficientes ainda.</div>';return;}
+  const{metrics}=data;
+  const hasSales=metrics.filter(m=>m.sold>0);
+  const urgent=hasSales.filter(m=>m.stock===0||m.daysOfStock<14);
+  const totalVelPerWeek=hasSales.reduce((s,m)=>s+m.velocity,0);
+  const colVel={};
+  hasSales.forEach(m=>{const col=m.p.col||'basica';if(!colVel[col])colVel[col]={velocity:0,sold:0};colVel[col].velocity+=m.velocity;colVel[col].sold+=m.sold;});
+  const sizeMap={};
+  hasSales.forEach(m=>{const sz=m.p.s||'U';sizeMap[sz]=(sizeMap[sz]||0)+m.sold;});
+  const topReorder=[...hasSales].sort((a,b)=>b.score-a.score).slice(0,10);
+  const maxColVel=Math.max(...Object.values(colVel).map(v=>v.velocity),0.01);
+  const maxSz=Math.max(...Object.values(sizeMap),1);
+  const topCol=Object.entries(colVel).sort((a,b)=>b[1].velocity-a[1].velocity)[0];
+  const topSz=Object.entries(sizeMap).sort((a,b)=>b[1]-a[1])[0];
+  el.innerHTML=`<div style="display:flex;flex-direction:column;gap:1.2rem;padding-bottom:2rem">
+    <div class="intel-grid">
+      <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--red),var(--amber))">
+        <div class="intel-label">Urgentes</div><div class="intel-val" style="color:var(--red)">${urgent.length}</div><div class="intel-sub">produtos esgotando</div></div>
+      <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--amber),var(--green))">
+        <div class="intel-label">Velocidade</div><div class="intel-val">${totalVelPerWeek.toFixed(1)}</div><div class="intel-sub">peças/semana</div></div>
+      <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--purple),var(--pink))">
+        <div class="intel-label">Top coleção</div><div class="intel-val" style="font-size:.85rem">${COL_LABEL_MAP[topCol?.[0]]||topCol?.[0]||'-'}</div><div class="intel-sub">mais pedida</div></div>
+      <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--green),var(--teal))">
+        <div class="intel-label">Top tamanho</div><div class="intel-val">${topSz?.[0]||'-'}</div><div class="intel-sub">${topSz?.[1]||0} vendas</div></div>
+    </div>
+    <div class="intel-section">
+      <div class="intel-section-title">📊 Demanda por coleção</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${Object.entries(colVel).sort((a,b)=>b[1].velocity-a[1].velocity).map(([col,d])=>{
+          const pct=Math.round((d.velocity/maxColVel)*100);
+          const share=totalVelPerWeek>0?Math.round((d.velocity/totalVelPerWeek)*100):0;
+          const c=COL_CLR_MAP[col]||'var(--blue)';
+          const sugQty=Math.max(1,Math.round(d.velocity*2));
+          return`<div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+              <span style="font-weight:500">${COL_LABEL_MAP[col]||col}</span>
+              <span style="color:var(--text3)">${d.sold} vendas · <b style="color:${c}">${share}%</b> · sugestão: <b>${sugQty} peças</b></span>
+            </div>
+            <div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:${c};border-radius:4px;transition:width .5s"></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="intel-section">
+      <div class="intel-section-title">📐 Tamanhos mais vendidos</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${Object.entries(sizeMap).sort((a,b)=>b[1]-a[1]).map(([sz,qty])=>{
+          const pct=Math.round((qty/maxSz)*100);
+          const col=pct>70?'var(--green)':pct>40?'var(--amber)':'var(--text3)';
+          return`<div style="flex:1;min-width:52px;text-align:center;padding:10px 6px;background:var(--bg2);border:1px solid var(--border);border-radius:10px">
+            <div style="font-size:1.1rem;font-weight:700;color:${col}">${sz}</div>
+            <div style="font-size:10px;color:var(--text3)">${qty} vendas</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="intel-section">
+      <div class="intel-section-title">🏆 Reposição prioritária <span>(velocidade × margem × urgência)</span></div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${topReorder.map((m,i)=>{
+          const dLabel=m.stock===0?'<span style="color:var(--red);font-weight:600">ZERADO</span>':m.daysOfStock>=999?'<span style="color:var(--text3)">+30d</span>':m.daysOfStock<7?`<span style="color:var(--red)">${Math.round(m.daysOfStock)}d</span>`:`<span style="color:var(--amber)">${Math.round(m.daysOfStock)}d</span>`;
+          return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:9px">
+            <div style="font-size:.9rem;font-weight:700;color:var(--text3);width:20px">#${i+1}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.p.n}</div>
+              <div style="font-size:11px;color:var(--text3)">${m.p.s} · ${m.p.c} · ${m.velocity.toFixed(1)} un/sem · estoque: ${m.stock}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">${dLabel}<div style="font-size:11px;color:var(--text3)">${fmt(m.cost)}</div></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="intel-section">
+      <div class="intel-section-title">💰 Simulador de pedido</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <label style="font-size:13px;color:var(--text2)">Orçamento disponível:</label>
+        <input type="number" id="sim-budget" value="400" min="50" max="9999" step="50"
+          style="width:110px;padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text1);font-size:14px"
+          oninput="runBudgetSim()">
+        <button onclick="runBudgetSim()" style="padding:6px 16px;background:var(--pink);color:#fff;border-radius:8px;font-size:13px;border:none;cursor:pointer">Calcular</button>
+      </div>
+      <div id="sim-result"></div>
+    </div>
+  </div>`;
+  runBudgetSim();
+}
+function runBudgetSim(){
+  const budget=parseFloat(document.getElementById('sim-budget')?.value)||400;
+  const el=document.getElementById('sim-result');if(!el)return;
+  const data=_buildVelocityData();
+  if(!data){el.innerHTML='<div style="color:var(--text3);font-size:13px">Sem dados de vendas.</div>';return;}
+  const candidates=[...data.metrics].filter(m=>m.sold>0).sort((a,b)=>b.score-a.score);
+  let remaining=budget;
+  const chosen=[];
+  for(const c of candidates){if(c.cost>0&&c.cost<=remaining){chosen.push(c);remaining-=c.cost;}if(remaining<15)break;}
+  const totCost=chosen.reduce((s,c)=>s+c.cost,0);
+  const totMargin=chosen.reduce((s,c)=>s+c.margin,0);
+  const totRev=chosen.reduce((s,c)=>s+c.p.p,0);
+  el.innerHTML=`<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:90px;text-align:center;padding:10px;background:var(--bg3);border-radius:8px">
+      <div style="font-size:1.4rem;font-weight:700;color:var(--pink)">${chosen.length}</div><div style="font-size:11px;color:var(--text3)">peças</div></div>
+    <div style="flex:1;min-width:90px;text-align:center;padding:10px;background:var(--bg3);border-radius:8px">
+      <div style="font-size:1.1rem;font-weight:700;color:var(--amber)">${fmt(totCost)}</div><div style="font-size:11px;color:var(--text3)">investimento</div></div>
+    <div style="flex:1;min-width:90px;text-align:center;padding:10px;background:var(--bg3);border-radius:8px">
+      <div style="font-size:1.1rem;font-weight:700;color:var(--green)">${fmt(totMargin)}</div><div style="font-size:11px;color:var(--text3)">lucro estimado</div></div>
+    <div style="flex:1;min-width:90px;text-align:center;padding:10px;background:var(--bg3);border-radius:8px">
+      <div style="font-size:1.1rem;font-weight:700;color:var(--blue)">${totCost>0?Math.round((totMargin/totCost)*100):0}%</div><div style="font-size:11px;color:var(--text3)">ROI</div></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:4px">
+    ${chosen.map((c,i)=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:7px 10px;background:var(--bg3);border-radius:7px">
+      <span style="color:var(--text3);width:18px;flex-shrink:0">${i+1}.</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.p.n} <span style="color:var(--text3)">${c.p.s}</span></span>
+      <span style="color:var(--pink);font-weight:600;flex-shrink:0">${fmt(c.cost)}</span>
+      <span style="color:var(--green);font-size:11px;flex-shrink:0">+${fmt(c.margin)}</span>
+    </div>`).join('')}
+    ${remaining>10?`<div style="padding:6px 10px;font-size:11px;color:var(--text3)">💰 Sobram ${fmt(remaining)} do orçamento</div>`:''}
+    ${chosen.length===0?'<div style="color:var(--text3);font-size:13px;padding:8px">Nenhum produto se encaixa nesse orçamento ainda.</div>':''}
+  </div>`;
+}
 let _intelTab='colecoes';
 function switchIntel(tab,btn){_intelTab=tab;document.querySelectorAll('.intel-tab').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderIntelPanel();}
 const COL_META_L={personagens:'👾 Personagens',religiosa:'✝️ Religiosas',basica:'⚫ Básicas',brasil:'🇧🇷 Brasil',urbana:'🏙️ Urbana',natureza:'🌸 Natureza',academia:'💪 Academia'};
