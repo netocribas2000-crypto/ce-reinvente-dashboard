@@ -457,6 +457,7 @@ tr:hover td{background:var(--bg3)}
     <button class="intel-tab" onclick="switchIntel('calendario',this)">📅 Calendário</button>
     <button class="intel-tab" onclick="switchIntel('clientes',this)">👤 Clientes</button>
     <button class="intel-tab" onclick="switchIntel('estoque',this)">📦 Estoque</button>
+    <button class="intel-tab" onclick="switchIntel('dre',this)">📊 DRE</button>
   </div>
   <div id="intel-panel"></div>
 </div>
@@ -1218,7 +1219,117 @@ function getClientProfile(clientId){
 }
 
 function renderConferencia(){_intelTab='colecoes';document.querySelectorAll('.intel-tab').forEach((b,i)=>{b.classList.toggle('active',i===0);});renderIntelPanel();}
-function renderIntelPanel(){const el=document.getElementById('intel-panel');if(!el)return;const fns={colecoes:intelColecoes,cores:intelCores,pagamentos:intelPagamentos,calendario:intelCalendario,clientes:intelClientes,estoque:intelEstoque};(fns[_intelTab]||intelColecoes)(el);}
+function renderIntelPanel(){const el=document.getElementById('intel-panel');if(!el)return;const fns={colecoes:intelColecoes,cores:intelCores,pagamentos:intelPagamentos,calendario:intelCalendario,clientes:intelClientes,estoque:intelEstoque,dre:intelDRE};(fns[_intelTab]||intelColecoes)(el);}
+let _dreYear=new Date().getFullYear(),_dreMonth=new Date().getMonth();
+function _dreNav(d){_dreMonth+=d;if(_dreMonth>11){_dreMonth=0;_dreYear++;}if(_dreMonth<0){_dreMonth=11;_dreYear--;}renderIntelPanel();}
+function intelDRE(el){
+  const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  function calcMonth(y,m){
+    const sales=DB.sales.filter(s=>{const d=new Date(s.date);return!s.pending&&d.getFullYear()===y&&d.getMonth()===m;});
+    const receita=sales.reduce((s,v)=>s+v.total,0);
+    const cmv=sales.reduce((s,v)=>s+(v.items||[{pid:v.productId,qty:1,costUnit:v.costUnit||0,freightUnit:v.freightUnit||0}]).reduce((a,i)=>a+(((i.costUnit||0)+(i.freightUnit||0))*(i.qty||1)),0),0);
+    const despesas=DB.expenses.filter(e=>{const d=new Date(e.date);return d.getFullYear()===y&&d.getMonth()===m;});
+    const totalDesp=despesas.reduce((s,e)=>s+e.value,0);
+    const lucroBruto=receita-cmv;
+    const lucroLiq=lucroBruto-totalDesp;
+    return{receita,cmv,lucroBruto,totalDesp,lucroLiq,sales:sales.length,despesas};
+  }
+  const cur=calcMonth(_dreYear,_dreMonth);
+  const prevM=_dreMonth===0?11:_dreMonth-1,prevY=_dreMonth===0?_dreYear-1:_dreYear;
+  const prev=calcMonth(prevY,prevM);
+  const mgBruta=cur.receita>0?Math.round((cur.lucroBruto/cur.receita)*100):0;
+  const mgLiq=cur.receita>0?Math.round((cur.lucroLiq/cur.receita)*100):0;
+  const delta=v=>prev[v]>0?Math.round(((cur[v]-prev[v])/prev[v])*100):null;
+  const arrow=(v,good='up')=>{const d=delta(v);if(d===null)return'';const up=d>=0;const ok=good==='up'?up:!up;return`<span style="font-size:11px;color:${ok?'var(--green)':'var(--red)'};margin-left:4px">${up?'▲':'▼'}${Math.abs(d)}%</span>`;};
+  const last6=[];for(let i=5;i>=0;i--){const mm=(_dreMonth-i+12)%12,yy=_dreYear+(Math.floor((_dreMonth-i)/12));last6.push({label:MONTHS[mm].slice(0,3),y:yy,m:mm,...calcMonth(yy,mm)});}
+  const maxRec=Math.max(...last6.map(x=>x.receita),1);
+  const bycat={};cur.despesas.forEach(e=>{bycat[e.cat]=(bycat[e.cat]||0)+e.value;});
+
+  el.innerHTML=`<div style="display:flex;flex-direction:column;gap:1.2rem;padding-bottom:2rem">
+    <!-- Navegação mês -->
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:12px 16px">
+      <button onclick="_dreNav(-1)" style="background:var(--bg3);border:none;border-radius:8px;padding:6px 14px;cursor:pointer;color:var(--text2);font-size:16px">‹</button>
+      <div style="text-align:center">
+        <div style="font-size:1.1rem;font-weight:700;color:var(--text)">${MONTHS[_dreMonth]} ${_dreYear}</div>
+        <div style="font-size:11px;color:var(--text3)">${cur.sales} vendas pagas</div>
+      </div>
+      <button onclick="_dreNav(1)" style="background:var(--bg3);border:none;border-radius:8px;padding:6px 14px;cursor:pointer;color:var(--text2);font-size:16px">›</button>
+    </div>
+
+    <!-- DRE -->
+    <div class="intel-section">
+      <div class="intel-section-title">📋 Demonstração de Resultado</div>
+      <div style="display:flex;flex-direction:column;gap:0">
+        ${[
+          {label:'💰 Receita bruta',val:cur.receita,color:'var(--text)',bold:true,delta:arrow('receita')},
+          {label:'📦 (−) Custo das peças',val:-cur.cmv,color:'var(--red)',sub:true},
+          {label:'📊 Lucro bruto',val:cur.lucroBruto,color:cur.lucroBruto>=0?'var(--green)':'var(--red)',bold:true,extra:`${mgBruta}% margem`,sep:true},
+          {label:'💸 (−) Despesas',val:-cur.totalDesp,color:'var(--red)',sub:true,delta:arrow('totalDesp','down')},
+          {label:'✨ Lucro líquido',val:cur.lucroLiq,color:cur.lucroLiq>=0?'var(--green)':'var(--red)',bold:true,extra:`${mgLiq}% margem`,sep:true,big:true},
+        ].map(r=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:${r.big?'14px':'9px'} 12px;${r.sep?'border-top:2px solid var(--border);margin-top:4px;':''}${r.sub?'padding-left:24px;':''}background:${r.big?(cur.lucroLiq>=0?'var(--greenbg)':'var(--redbg)'):'transparent'};border-radius:${r.big?'10px':'0'}">
+            <span style="font-size:${r.big?'14px':'13px'};color:var(--text${r.sub?'3':'2'});font-weight:${r.bold?'600':'400'}">${r.label}${r.delta||''}</span>
+            <span style="font-size:${r.big?'1.15rem':'13px'};font-weight:${r.bold?'700':'400'};color:${r.color};font-family:var(--mono)">${r.val>=0?'':'-'}${fmt(Math.abs(r.val))}${r.extra?` <span style="font-size:11px;color:var(--text3);font-weight:400">${r.extra}</span>`:''}
+            </span>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Despesas do mês por categoria -->
+    ${cur.totalDesp>0?`<div class="intel-section">
+      <div class="intel-section-title">💸 Despesas de ${MONTHS[_dreMonth]}</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${Object.entries(bycat).sort((a,b)=>b[1]-a[1]).map(([cat,val])=>{
+          const pct=Math.round((val/cur.totalDesp)*100);
+          return`<div style="display:flex;align-items:center;gap:8px;font-size:12px">
+            <span style="flex:1;color:var(--text2)">${cat}</span>
+            <div style="flex:2;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:var(--red);border-radius:3px"></div>
+            </div>
+            <span style="color:var(--red);font-family:var(--mono);width:72px;text-align:right">${fmt(val)}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`:''}
+
+    <!-- Histórico 6 meses -->
+    <div class="intel-section">
+      <div class="intel-section-title">📈 Histórico — últimos 6 meses</div>
+      <div style="display:flex;gap:6px;align-items:flex-end;height:90px;padding-bottom:20px;position:relative">
+        ${last6.map(x=>{
+          const hRec=x.receita>0?Math.round((x.receita/maxRec)*80):0;
+          const hLiq=x.lucroLiq>0?Math.round((x.lucroLiq/maxRec)*80):0;
+          const isCur=x.y===_dreYear&&x.m===_dreMonth;
+          return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative">
+            <div style="font-size:9px;color:var(--text3);position:absolute;bottom:-18px;white-space:nowrap">${x.label}</div>
+            <div style="display:flex;gap:2px;align-items:flex-end;height:80px">
+              <div title="Receita ${fmt(x.receita)}" style="width:12px;height:${hRec}px;background:${isCur?'var(--pink)':'var(--border2)'};border-radius:3px 3px 0 0;min-height:${x.receita>0?3:0}px"></div>
+              <div title="Lucro ${fmt(x.lucroLiq)}" style="width:12px;height:${Math.max(0,hLiq)}px;background:${x.lucroLiq>=0?'var(--green)':'var(--red)'};border-radius:3px 3px 0 0;min-height:${x.lucroLiq!==0?3:0}px"></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:12px;margin-top:8px;font-size:11px;color:var(--text3)">
+        <span><span style="display:inline-block;width:10px;height:10px;background:var(--pink);border-radius:2px;margin-right:4px"></span>Receita</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:var(--green);border-radius:2px;margin-right:4px"></span>Lucro líquido</span>
+      </div>
+    </div>
+
+    <!-- vs mês anterior -->
+    <div class="intel-grid">
+      <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--green),var(--teal))">
+        <div class="intel-label">Receita vs ${MONTHS[prevM].slice(0,3)}</div>
+        <div class="intel-val" style="color:${cur.receita>=prev.receita?'var(--green)':'var(--red)'}">${cur.receita>=prev.receita?'+':''}${fmt(cur.receita-prev.receita)}</div>
+        <div class="intel-sub">${prev.receita>0?`era ${fmt(prev.receita)}`:'sem dados anteriores'}</div>
+      </div>
+      <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--purple),var(--pink))">
+        <div class="intel-label">Lucro vs ${MONTHS[prevM].slice(0,3)}</div>
+        <div class="intel-val" style="color:${cur.lucroLiq>=prev.lucroLiq?'var(--green)':'var(--red)'}">${cur.lucroLiq>=prev.lucroLiq?'+':''}${fmt(cur.lucroLiq-prev.lucroLiq)}</div>
+        <div class="intel-sub">${prev.receita>0?`era ${fmt(prev.lucroLiq)}`:'sem dados anteriores'}</div>
+      </div>
+    </div>
+  </div>`;
+}
 
 function intelClientes(el){
   const withSales=DB.clients.filter(c=>DB.sales.some(v=>v.clientId==c.id));
