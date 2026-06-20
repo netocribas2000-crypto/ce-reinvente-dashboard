@@ -695,6 +695,7 @@ async function loadData(){
     DB['seed_data_disabled_v2']=true;
   })();
   normalizeDataLabels();
+  linkOrphanedSales();
   recalcClientTotals();
   applyPendingOrders();
   await saveData();
@@ -791,6 +792,19 @@ function applyPendingOrders(){
     order.items.forEach(pid=>{DB.stock[pid]=(DB.stock[pid]||0)+1;});
     DB.meta.appliedOrders.push(order.id);
     changed=true;
+  });
+  return changed;
+}
+function linkOrphanedSales(){
+  const norm=s=>s.toLowerCase().replace(/[^a-z0-9]/gi,'').replace(/[àáâãä]/g,'a').replace(/[èéêë]/g,'e').replace(/[ìíîï]/g,'i').replace(/[òóôõö]/g,'o').replace(/[ùúûü]/g,'u').replace(/[ç]/g,'c');
+  const nameMap={};
+  DB.clients.forEach(c=>{nameMap[norm(c.name)]=c.id;});
+  let changed=false;
+  DB.sales.forEach(s=>{
+    if(s.clientId||!s.client)return;
+    const key=norm(s.client);
+    const match=Object.entries(nameMap).find(([k])=>k===key||k.startsWith(key)||key.startsWith(k));
+    if(match){s.clientId=match[1];changed=true;}
   });
   return changed;
 }
