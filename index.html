@@ -784,6 +784,9 @@ function applyPendingOrders(){
     {id:'lamell_20260620',date:'2026-06-20',desc:'Reposição La Mell',value:377.05,
      items:[333,334,335,336,337,338,339,340,341,342,343,344,345,346]}
   ];
+  const NEW_CLIENTS=[
+    {migId:'client_marli_init',id:1782000000099,name:'Marli',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''}
+  ];
   let changed=false;
   ORDERS.forEach(order=>{
     if(DB.meta.appliedOrders.includes(order.id))return;
@@ -791,6 +794,13 @@ function applyPendingOrders(){
     DB.expenses.push({id:Date.now()+Math.random(),date:order.date,cat:'Reposição',desc:order.desc,value:order.value});
     order.items.forEach(pid=>{DB.stock[pid]=(DB.stock[pid]||0)+1;});
     DB.meta.appliedOrders.push(order.id);
+    changed=true;
+  });
+  NEW_CLIENTS.forEach(nc=>{
+    if(DB.meta.appliedOrders.includes(nc.migId))return;
+    const exists=DB.clients.some(c=>c.name.toLowerCase()===nc.name.toLowerCase());
+    if(!exists){const{migId,...client}=nc;DB.clients.push(client);}
+    DB.meta.appliedOrders.push(nc.migId);
     changed=true;
   });
   return changed;
