@@ -1012,6 +1012,8 @@ function _renderBuyList(){
 function startPurchase(pid){const p=getP(pid);if(!p)return;goTab('fornecedores');setTimeout(()=>{const q=document.getElementById('search-sup');if(q){q.value=SUP_L[p.supplier]||p.supplier;renderSuppliers();}alert(`Compra sugerida: ${p.n}\nFornecedor: ${SUP_L[p.supplier]||p.supplier}\nCusto estimado: ${fmt((DB.costs[p.id]||0)+(DB.freights[p.id]||0))}`);},80);}
 const COL_LABEL_MAP={personagens:'👾 Personagens',religiosa:'✝️ Religiosas',religiosas:'✝️ Religiosas',basica:'⚫ Básicas',basicas:'⚫ Básicas',natureza:'🌸 Natureza',brasil:'🇧🇷 Brasil',urbana:'🏙️ Urbana',academia:'💪 Academia'};
 const COL_CLR_MAP={personagens:'var(--purple)',religiosa:'var(--teal)',religiosas:'var(--teal)',basica:'var(--text2)',basicas:'var(--text2)',natureza:'var(--pink)',brasil:'var(--green)',urbana:'var(--blue)',academia:'var(--amber)'};
+const SUP_LEAD_DAYS={lamell:20,nossa:7,bmoda:7,original:3};
+function getLeadDays(p){return SUP_LEAD_DAYS[p.supplier]||14;}
 function _buildVelocityData(){
   const allS=DB.sales;if(!allS.length)return null;
   const firstDate=new Date(allS.reduce((min,s)=>s.date<min?s.date:min,allS[0].date));
@@ -1025,9 +1027,11 @@ function _buildVelocityData(){
     const margin=p.p-cost;
     const velocity=sold/weeksActive;
     const daysOfStock=velocity>0?(stock/velocity*7):(stock>0?999:0);
-    const urgency=daysOfStock<7?3:daysOfStock<14?2:1;
+    const lead=getLeadDays(p);
+    // urgency: 3=pedir agora (vai zerar antes de chegar), 2=pedir em breve, 1=ok
+    const urgency=daysOfStock<=lead?3:daysOfStock<=lead*1.5?2:1;
     const score=margin*velocity*urgency;
-    return{p,sold,stock,cost,margin,velocity,daysOfStock,urgency,score};
+    return{p,sold,stock,cost,margin,velocity,daysOfStock,urgency,lead,score};
   }).filter(m=>m.sold>0||m.stock>0);
   return{metrics,weeksActive,soldMap};
 }
@@ -1037,7 +1041,7 @@ function renderPedidoInteligente(){
   if(!data){el.innerHTML='<div class="empty" style="padding:2rem;text-align:center">📊 Sem dados de vendas suficientes ainda.</div>';return;}
   const{metrics}=data;
   const hasSales=metrics.filter(m=>m.sold>0);
-  const urgent=hasSales.filter(m=>m.stock===0||m.daysOfStock<14);
+  const urgent=hasSales.filter(m=>m.urgency===3);
   const totalVelPerWeek=hasSales.reduce((s,m)=>s+m.velocity,0);
   const colVel={};
   hasSales.forEach(m=>{const col=m.p.col||'basica';if(!colVel[col])colVel[col]={velocity:0,sold:0};colVel[col].velocity+=m.velocity;colVel[col].sold+=m.sold;});
@@ -1096,7 +1100,7 @@ function renderPedidoInteligente(){
       <div class="intel-section-title">🏆 Reposição prioritária <span>(velocidade × margem × urgência)</span></div>
       <div style="display:flex;flex-direction:column;gap:6px">
         ${topReorder.map((m,i)=>{
-          const dLabel=m.stock===0?'<span style="color:var(--red);font-weight:600">ZERADO</span>':m.daysOfStock>=999?'<span style="color:var(--text3)">+30d</span>':m.daysOfStock<7?`<span style="color:var(--red)">${Math.round(m.daysOfStock)}d</span>`:`<span style="color:var(--amber)">${Math.round(m.daysOfStock)}d</span>`;
+          const dLabel=m.stock===0?'<span style="color:var(--red);font-weight:600">🚨 ZERADO</span>':m.daysOfStock>=999?'<span style="color:var(--green)">✅ OK</span>':m.urgency===3?`<span style="color:var(--red);font-weight:600">🚨 PEDIR AGORA</span><div style="font-size:10px;color:var(--red)">${Math.round(m.daysOfStock)}d estoque · ${m.lead}d entrega</div>`:m.urgency===2?`<span style="color:var(--amber);font-weight:600">⚠️ Pedir em breve</span><div style="font-size:10px;color:var(--amber)">${Math.round(m.daysOfStock)}d estoque · ${m.lead}d entrega</div>`:`<span style="color:var(--green)">${Math.round(m.daysOfStock)}d</span>`;
           return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:9px">
             <div style="font-size:.9rem;font-weight:700;color:var(--text3);width:20px">#${i+1}</div>
             <div style="flex:1;min-width:0">
