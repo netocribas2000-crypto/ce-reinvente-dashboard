@@ -652,14 +652,20 @@ function setSS(msg,state){
 // ─── GOOGLE SHEETS ────────────────────────────────────────────
 async function gsRead(){
   try{
-    const r=await fetch(GS_URL);
+    const ctrl=new AbortController();
+    const t=setTimeout(()=>ctrl.abort(),8000);
+    const r=await fetch(GS_URL,{signal:ctrl.signal});
+    clearTimeout(t);
     const text=await r.text();
     return JSON.parse(text);
   }catch(e){return null;}
 }
 async function gsWrite(data){
   try{
-    const r=await fetch(GS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(data)});
+    const ctrl=new AbortController();
+    const t=setTimeout(()=>ctrl.abort(),10000);
+    const r=await fetch(GS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(data),signal:ctrl.signal});
+    clearTimeout(t);
     const j=await r.json();
     return j.success===true;
   }catch(e){return false;}
