@@ -610,6 +610,9 @@ const LAMELL=[
   {id:344,n:"Tshirt Turma Do Bob Esponja",c:"Flash Yellow",s:"GG",p:59.90,cost:28.58,freight:LF,supplier:'lamell',col:'personagens'},
   {id:345,n:"Tshirt Patollino Perna Longa Looney Tunes",c:"Verde Selva",s:"G1",p:59.90,cost:29.98,freight:LF,supplier:'lamell',col:'personagens'},
   {id:346,n:"Tshirt Infantil Roar Lion King",c:"Azul Light Navy",s:"10",p:59.90,cost:22.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:347,n:"Tshirt Cruz (DTF)",c:"—",s:"U",p:49.90,cost:19.49,freight:0,supplier:'original',col:'religiosas'},
+  {id:348,n:"Tshirt Monstros S.A (DTF)",c:"—",s:"U",p:49.90,cost:19.49,freight:0,supplier:'original',col:'personagens'},
+  {id:349,n:"Tshirt Jerry (DTF)",c:"—",s:"U",p:49.90,cost:21.49,freight:0,supplier:'original',col:'personagens'},
 ];
 const ALL=[...ORIG,...NOSSA,...BMODA,...LAMELL];
 const SUP_C={nossa:'bg-a',bmoda:'bg-v',lamell:'bg-p',original:'bg-b'};
@@ -786,7 +789,17 @@ function applyPendingOrders(){
      items:[333,334,335,336,337,338,339,340,341,342,343,344,345,346]}
   ];
   const NEW_CLIENTS=[
-    {migId:'client_marli_init',id:1782000000099,name:'Marli',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''}
+    {migId:'client_marli_init',id:1782000000099,name:'Marli',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''},
+    {migId:'client_soeli_init',id:1782000000101,name:'Soeli',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''},
+    {migId:'client_anajulia_init',id:1782000000102,name:'ana julia',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''},
+    {migId:'client_araldo_init',id:1782000000103,name:'Araldo',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''}
+  ];
+  const NEW_SALES=[
+    {migId:'sale_22jun_soeli',date:'2026-06-22',client:'Soeli',clientId:1782000000101,pid:347,price:49.90,cost:19.49,pay:'A receber',pending:true},
+    {migId:'sale_22jun_daia_monstros',date:'2026-06-22',client:'Daia',clientId:null,pid:348,price:49.90,cost:19.49,pay:'A receber',pending:true},
+    {migId:'sale_22jun_anajulia',date:'2026-06-22',client:'ana julia',clientId:1782000000102,pid:349,price:49.90,cost:21.49,pay:'A receber',pending:true},
+    {migId:'sale_22jun_araldo',date:'2026-06-22',client:'Araldo',clientId:1782000000103,pid:310,price:129.90,cost:24.45,pay:'A receber',pending:true},
+    {migId:'sale_22jun_melri_eva',date:'2026-06-22',client:'Melri',clientId:null,pid:302,price:59.90,cost:24.45,pay:'A receber',pending:true}
   ];
   let changed=false;
   ORDERS.forEach(order=>{
@@ -802,6 +815,16 @@ function applyPendingOrders(){
     const exists=DB.clients.some(c=>c.name.toLowerCase()===nc.name.toLowerCase());
     if(!exists){const{migId,...client}=nc;DB.clients.push(client);}
     DB.meta.appliedOrders.push(nc.migId);
+    changed=true;
+  });
+  NEW_SALES.forEach(ns=>{
+    if(DB.meta.appliedOrders.includes(ns.migId))return;
+    if(!DB.sales)DB.sales=[];
+    const{migId,pid,price,cost,pay,pending,date,client,clientId}=ns;
+    const cid=clientId||(DB.clients.find(c=>c.name.toLowerCase()===client.toLowerCase())?.id||null);
+    DB.sales.push({id:Date.now()+Math.random(),items:[{pid,qty:1,price,total:price,costUnit:cost,freightUnit:0}],client,clientId:cid,total:price,discount:0,pay,obs:'',pending,date:new Date(date).toISOString()});
+    if(DB.stock[pid]!==undefined)DB.stock[pid]=Math.max(0,(DB.stock[pid]||0)-1);
+    DB.meta.appliedOrders.push(ns.migId);
     changed=true;
   });
   return changed;
