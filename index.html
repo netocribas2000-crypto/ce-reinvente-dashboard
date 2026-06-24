@@ -909,7 +909,10 @@ function applyPendingOrders(){
     {migId:'client_jane_init',id:1782000000106,name:'Jane',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''},
     {migId:'client_daiane_init',id:1782000000107,name:'Daiane',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''},
     {migId:'client_amanda_init',id:1782000000108,name:'Amanda',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''},
-    {migId:'client_sofia_init',id:1782000000109,name:'Sofia',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''}
+    {migId:'client_sofia_init',id:1782000000109,name:'Sofia',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''},
+    {migId:'client_josiane_init',id:1782000000110,name:'josiane',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''},
+    {migId:'client_bia_init',id:1782000000111,name:'Bia',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''},
+    {migId:'client_coelho_init',id:1782000000112,name:'Coelho',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''}
   ];
   const NEW_SALES=[
     {migId:'sale_22jun_soeli',date:'2026-06-22',client:'Soeli',clientId:1782000000101,pid:347,price:49.90,cost:19.49,pay:'A receber',pending:true},
@@ -926,9 +929,19 @@ function applyPendingOrders(){
     {migId:'sale_18jun_jane_snoopy',date:'2026-06-18',client:'Jane',clientId:1782000000106,pid:305,price:59.90,cost:24.45,pay:'A receber',pending:true},
     {migId:'sale_18jun_daiane_scooby',date:'2026-06-18',client:'Daiane',clientId:1782000000107,pid:112,price:49.90,cost:19.49,pay:'Pix',pending:false},
     {migId:'sale_18jun_daiane_minnie',date:'2026-06-18',client:'Daiane',clientId:1782000000107,pid:203,price:49.90,cost:19.99,pay:'Pix',pending:false},
-    {migId:'sale_18jun_amanda_mickey',date:'2026-06-18',client:'Amanda',clientId:1782000000108,pid:308,price:59.90,cost:27.30,pay:'Pix',pending:false}
+    {migId:'sale_18jun_amanda_mickey',date:'2026-06-18',client:'Amanda',clientId:1782000000108,pid:308,price:59.90,cost:27.30,pay:'Pix',pending:false},
+    {migId:'sale_20jun_josiane_piupiu',date:'2026-06-20',client:'josiane',clientId:1782000000110,pid:15,price:49.90,cost:19.99,pay:'A receber',pending:true},
+    {migId:'sale_24jun_bia_digno',date:'2026-06-24',client:'Bia',clientId:1782000000111,pid:101,price:49.90,cost:21.49,pay:'A receber',pending:true},
+    {migId:'sale_24jun_bia_piupiu',date:'2026-06-24',client:'Bia',clientId:1782000000111,pid:307,price:59.90,cost:29.86,pay:'A receber',pending:true},
+    {migId:'sale_24jun_coelho_basica',date:'2026-06-24',client:'Coelho',clientId:1782000000112,pid:208,price:49.90,cost:24.99,pay:'A receber',pending:true},
+    {migId:'sale_24jun_coelho_peanuts',date:'2026-06-24',client:'Coelho',clientId:1782000000112,pid:304,price:59.90,cost:30.15,pay:'A receber',pending:true}
   ];
   const FIXES=[
+    {migId:'fix_loreane_stitch_pago',fn:()=>{
+      const s=DB.sales.find(x=>x.client&&x.client.toLowerCase()==='loreane'&&x.pending&&x.items&&x.items.some(i=>i.pid===7));
+      if(!s)return;
+      s.pay='Pix';s.pending=false;
+    }},
     {migId:'fix_araldo_sale_v2',fn:()=>{
       const s=DB.sales.find(x=>x.client==='Araldo'&&x.pending&&Math.abs(x.total-129.90)<0.01);
       if(!s)return;
