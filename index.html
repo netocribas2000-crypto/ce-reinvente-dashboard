@@ -805,10 +805,12 @@ function showMetricDetail(type){
     const expRows=[...opExp].reverse().slice(0,20).map(e=>`<tr><td style="color:var(--text3)">${fmtD2(e.date)}</td><td>${e.desc}</td><td style="font-size:11px"><span style="padding:2px 6px;border-radius:4px;background:var(--redbg);color:var(--red)">${e.cat}</span></td><td style="color:var(--red);font-weight:500;font-family:var(--mono);text-align:right">${fmt2(e.value)}</td></tr>`).join('');
     content=`<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Por categoria</div>${catRows}</div><div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Últimas despesas</div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left;font-size:10px;color:var(--text3);padding:5px 8px;font-weight:500">Data</th><th style="text-align:left;font-size:10px;color:var(--text3);padding:5px 8px;font-weight:500">Descrição</th><th style="text-align:left;font-size:10px;color:var(--text3);padding:5px 8px;font-weight:500">Categoria</th><th style="text-align:right;font-size:10px;color:var(--text3);padding:5px 8px;font-weight:500">Valor</th></tr></thead><tbody>${expRows}</tbody></table></div>`;
   } else if(type==='lucro'){
-    title='📊 Lucro real';
+    title='📊 Lucro operacional';
     const rev=paid.reduce((s,v)=>s+v.total,0);
     const cst=DB.sales.reduce((s,v)=>s+tcSale(v),0);
-    const expTotal=DB.expenses.reduce((s,e)=>s+e.value,0);
+    const isR=e=>(e.cat||'').toLowerCase().includes('reposi');
+    const expTotal=DB.expenses.filter(e=>!isR(e)).reduce((s,e)=>s+e.value,0);
+    const reposT=DB.expenses.filter(e=>isR(e)).reduce((s,e)=>s+e.value,0);
     const lucroBruto=rev-cst;
     const lucroLiq=lucroBruto-expTotal;
     const mg=rev>0?Math.round((lucroLiq/rev)*100):0;
@@ -845,7 +847,10 @@ function showMetricDetail(type){
 }function renderHome(){
   const paid=DB.sales.filter(s=>!s.pending),pend=DB.sales.filter(s=>s.pending);
   const rev=paid.reduce((s,v)=>s+v.total,0),pendRev=pend.reduce((s,v)=>s+v.total,0);
-  const cst=DB.sales.reduce((s,v)=>s+tcSale(v),0),expTotal=DB.expenses.reduce((s,e)=>s+e.value,0);
+  const cst=DB.sales.reduce((s,v)=>s+tcSale(v),0);
+  const isRepos=e=>(e.cat||'').toLowerCase().includes('reposi');
+  const despOp=DB.expenses.filter(e=>!isRepos(e)),despRepos=DB.expenses.filter(e=>isRepos(e));
+  const expTotal=despOp.reduce((s,e)=>s+e.value,0),reposTotal=despRepos.reduce((s,e)=>s+e.value,0);
   const profit=rev-cst-expTotal,margin=rev>0?Math.round((profit/rev)*100):0;
   const qty=DB.sales.reduce((s,v)=>s+(v.items?v.items.reduce((a,i)=>a+(i.qty||1),0):(v.qty||1)),0);
   const stk=ALL.reduce((a,p)=>a+(DB.stock[p.id]||0),0),zeroStk=ALL.filter(p=>(DB.stock[p.id]||0)===0).length;
@@ -1923,7 +1928,10 @@ function openClaudeModal(){
   const now=new Date();
   const paid=DB.sales.filter(s=>!s.pending),pend=DB.sales.filter(s=>s.pending);
   const rev=paid.reduce((s,v)=>s+v.total,0),pendRev=pend.reduce((s,v)=>s+v.total,0);
-  const cst=DB.sales.reduce((s,v)=>s+tcSale(v),0),expTotal=DB.expenses.reduce((s,e)=>s+e.value,0);
+  const cst=DB.sales.reduce((s,v)=>s+tcSale(v),0);
+  const isRepos=e=>(e.cat||'').toLowerCase().includes('reposi');
+  const despOp=DB.expenses.filter(e=>!isRepos(e)),despRepos=DB.expenses.filter(e=>isRepos(e));
+  const expTotal=despOp.reduce((s,e)=>s+e.value,0),reposTotal=despRepos.reduce((s,e)=>s+e.value,0);
   const profit=rev-cst-expTotal,margin=rev>0?Math.round((profit/rev)*100):0;
   const qty=DB.sales.reduce((s,v)=>s+(v.items?v.items.reduce((a,i)=>a+(i.qty||1),0):(v.qty||1)),0);
   const counts={};DB.sales.forEach(v=>{if(v.items)v.items.forEach(i=>{counts[i.pid]=(counts[i.pid]||0)+(i.qty||1);});else counts[v.productId]=(counts[v.productId]||0)+(v.qty||1);});
