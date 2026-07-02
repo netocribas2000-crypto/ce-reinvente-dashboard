@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -469,6 +469,11 @@ tr:hover td{background:var(--bg3)}
     <button class="intel-tab" onclick="switchIntel('pagamentos',this)">💳 Pagamentos</button>
     <button class="intel-tab" onclick="switchIntel('calendario',this)">📅 Calendário</button>
     <button class="intel-tab" onclick="switchIntel('clientes',this)">👤 Clientes</button>
+    <button class="intel-tab" onclick="switchIntel('mensal',this)">📆 Mensal</button>
+    <button class="intel-tab" onclick="switchIntel('recorrencia',this)">🔁 Recorrência</button>
+    <button class="intel-tab" onclick="switchIntel('metas',this)">🎯 Metas</button>
+    <button class="intel-tab" onclick="switchIntel('canais',this)">🧭 Canais</button>
+    <button class="intel-tab" onclick="switchIntel('parcerias',this)">🤝 Parcerias</button>
     <button class="intel-tab" onclick="switchIntel('estoque',this)">📦 Estoque</button>
     <button class="intel-tab" onclick="switchIntel('dre',this)">📊 DRE</button>
   </div>
@@ -1442,7 +1447,7 @@ function getClientProfile(clientId){
 }
 
 function renderConferencia(){_intelTab='colecoes';document.querySelectorAll('.intel-tab').forEach((b,i)=>{b.classList.toggle('active',i===0);});renderIntelPanel();}
-function renderIntelPanel(){const el=document.getElementById('intel-panel');if(!el)return;const fns={colecoes:intelColecoes,cores:intelCores,pagamentos:intelPagamentos,calendario:intelCalendario,clientes:intelClientes,estoque:intelEstoque,dre:intelDRE};(fns[_intelTab]||intelColecoes)(el);}
+function renderIntelPanel(){const el=document.getElementById('intel-panel');if(!el)return;const fns={colecoes:intelColecoes,cores:intelCores,pagamentos:intelPagamentos,calendario:intelCalendario,clientes:intelClientes,mensal:intelMensal,recorrencia:intelRecorrencia,metas:intelMetas,canais:intelCanais,parcerias:intelParcerias,estoque:intelEstoque,dre:intelDRE};(fns[_intelTab]||intelColecoes)(el);}
 let _dreYear=new Date().getFullYear(),_dreMonth=new Date().getMonth();
 function _dreNav(d){_dreMonth+=d;if(_dreMonth>11){_dreMonth=0;_dreYear++;}if(_dreMonth<0){_dreMonth=11;_dreYear--;}renderIntelPanel();}
 function intelDRE(el){
@@ -1662,6 +1667,159 @@ function intelClientes(el){
 }
 
 function _salesItems(){const out=[];DB.sales.forEach(v=>{const items=v.items||[{pid:v.productId,qty:v.qty||1,price:v.price||v.total,total:v.total,costUnit:v.costUnit,freightUnit:v.freightUnit}];items.forEach(i=>out.push({...i,sale:v}));});return out;}
+
+const ACQ_CHANNELS=[
+  {id:'indicacao',label:'Indicação',color:'var(--purple)',bg:'var(--purplebg)',keys:['indic','amiga','catia','cátia','buiu','recomend']},
+  {id:'redes',label:'Redes sociais',color:'var(--pink)',bg:'var(--pinkbg)',keys:['instagram','insta','facebook','story','stories','rede','whatsapp','status']},
+  {id:'trafego',label:'Tráfego pago',color:'var(--blue)',bg:'var(--bluebg)',keys:['anuncio','anúncio','ads','trafego','tráfego','campanha','impulsion']},
+  {id:'influenciador',label:'Influenciador',color:'var(--amber)',bg:'var(--amberbg)',keys:['influ','criador','blogueira','publi']},
+  {id:'parceria',label:'Parceria',color:'var(--teal)',bg:'var(--tealbg)',keys:['parceria','loja','escola','igreja','salão','salao','academia']},
+  {id:'organico',label:'Orgânico',color:'var(--green)',bg:'var(--greenbg)',keys:['organico','orgânico','loja','vitrine','conhecia']},
+  {id:'sem-canal',label:'Sem canal definido',color:'var(--text3)',bg:'var(--bg3)',keys:[]}
+];
+function normTxt(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\?/g,'a').toLowerCase().trim();}
+function clientKey(v){return normTxt(v).replace(/[^a-z0-9]+/g,' ');}
+function saleClientName(s){return s.client||DB.clients.find(c=>c.id==s.clientId)?.name||'—';}
+function saleQty(s){return(s.items||[{qty:s.qty||1}]).reduce((a,i)=>a+(i.qty||1),0);}
+function saleCost(s){return(s.items||[{qty:s.qty||1,costUnit:s.costUnit||0,freightUnit:s.freightUnit||0}]).reduce((a,i)=>a+(((i.costUnit||0)+(i.freightUnit||0))*(i.qty||1)),0);}
+function saleMonth(s){const d=new Date(s.date);return{y:d.getFullYear(),m:d.getMonth(),d};}
+function monthLabel(y,m){return['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][m]+'/'+String(y).slice(-2);}
+function monthFull(y,m){return['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m]+' '+y;}
+function getMonthRows(y,m){return DB.sales.filter(s=>{const d=new Date(s.date);return d.getFullYear()===y&&d.getMonth()===m;});}
+function monthStats(y,m){
+  const rows=getMonthRows(y,m),paid=rows.filter(s=>!s.pending),pend=rows.filter(s=>s.pending);
+  const total=rows.reduce((a,s)=>a+(s.total||0),0),received=paid.reduce((a,s)=>a+(s.total||0),0),pending=pend.reduce((a,s)=>a+(s.total||0),0);
+  const qty=rows.reduce((a,s)=>a+saleQty(s),0),cost=rows.reduce((a,s)=>a+saleCost(s),0),paidCost=paid.reduce((a,s)=>a+saleCost(s),0);
+  const expenses=DB.expenses.filter(e=>{const d=new Date(e.date);return d.getFullYear()===y&&d.getMonth()===m;});
+  const opExp=expenses.filter(e=>!(e.cat||'').toLowerCase().includes('reposi')).reduce((a,e)=>a+(e.value||0),0);
+  const clients=new Set(rows.map(s=>clientKey(saleClientName(s))).filter(Boolean));
+  return{rows,paid,pend,total,received,pending,qty,cost,paidCost,gross:total-cost,opProfit:received-paidCost-opExp,opExp,clients:clients.size,avg:rows.length?total/rows.length:0};
+}
+function channelMeta(id){return ACQ_CHANNELS.find(c=>c.id===id)||ACQ_CHANNELS[ACQ_CHANNELS.length-1];}
+function inferChannel(c){
+  const txt=normTxt([c.channel,c.source,c.aquisition,c.acquisition,c.notes,c.obs,c.preferencias,(c.tags||[]).join(' ')].join(' '));
+  if(!txt)return'sem-canal';
+  const hit=ACQ_CHANNELS.find(ch=>ch.id!=='sem-canal'&&ch.keys.some(k=>txt.includes(normTxt(k))));
+  return hit?hit.id:'sem-canal';
+}
+function saveClientChannel(id,val){const i=DB.clients.findIndex(c=>c.id===id);if(i>=0){DB.clients[i].channel=val;scheduleSave();renderIntelPanel();}}
+function saveGoalMeta(){
+  if(!DB.meta)DB.meta={}; if(!DB.meta.analytics)DB.meta.analytics={};
+  DB.meta.monthly=parseFloat(document.getElementById('goal-monthly')?.value)||0;
+  DB.meta.analytics.profitGoal=parseFloat(document.getElementById('goal-profit')?.value)||0;
+  DB.meta.analytics.pendingLimit=parseFloat(document.getElementById('goal-pending')?.value)||0;
+  DB.meta.analytics.marketingBudget=parseFloat(document.getElementById('goal-marketing')?.value)||0;
+  DB.meta.analytics.cashReserve=parseFloat(document.getElementById('goal-cash')?.value)||0;
+  scheduleSave();renderIntelPanel();renderHome();
+}
+function goalBar(label,val,target,color,sub){
+  const pct=target>0?Math.max(0,Math.min(100,Math.round((val/target)*100))):0;
+  return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-bottom:5px"><span style="color:var(--text2)">${label}</span><span style="color:${color};font-family:var(--mono);font-weight:600">${fmt(val)}${target>0?' / '+fmt(target):''}</span></div><div style="height:8px;background:var(--bg3);border-radius:999px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${color};border-radius:999px"></div></div>${sub?`<div style="font-size:10px;color:var(--text3);margin-top:4px">${sub}</div>`:''}</div>`;
+}
+
+function intelMensal(el){
+  const now=new Date(),cy=now.getFullYear(),cm=now.getMonth(),cur=monthStats(cy,cm),prev=monthStats(cm===0?cy-1:cy,cm===0?11:cm-1);
+  const months=[];for(let i=5;i>=0;i--){let m=cm-i,y=cy;while(m<0){m+=12;y--;}months.push({y,m,...monthStats(y,m)});}
+  const max=Math.max(1,...months.map(x=>x.total));
+  const delta=(a,b)=>b>0?Math.round(((a-b)/b)*100):null;
+  const dTotal=delta(cur.total,prev.total),dQty=delta(cur.qty,prev.qty);
+  const top=Object.entries(cur.rows.reduce((acc,s)=>{(s.items||[{pid:s.productId,qty:s.qty||1}]).forEach(i=>{const p=getP(i.pid);const n=p?p.n:'Produto';acc[n]=(acc[n]||0)+(i.qty||1);});return acc;},{})).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  el.innerHTML=`<div class="intel-grid" style="margin-bottom:1rem">
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--pink),var(--purple))"><div class="intel-label">Vendas do mês</div><div class="intel-val">${fmt(cur.total)}</div><div class="intel-sub">${cur.rows.length} vendas · ${cur.qty} peças ${dTotal!==null?`· ${dTotal>=0?'+':''}${dTotal}% vs mês anterior`:''}</div></div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--green),var(--teal))"><div class="intel-label">Recebido no mês</div><div class="intel-val" style="color:var(--green)">${fmt(cur.received)}</div><div class="intel-sub">${cur.paid.length} vendas pagas</div></div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--amber),var(--red))"><div class="intel-label">A receber no mês</div><div class="intel-val" style="color:var(--amber)">${fmt(cur.pending)}</div><div class="intel-sub">${cur.pend.length} pendentes</div></div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--blue),var(--purple))"><div class="intel-label">Ticket médio</div><div class="intel-val">${fmt(cur.avg)}</div><div class="intel-sub">${cur.clients} clientes compraram ${dQty!==null?`· ${dQty>=0?'+':''}${dQty}% peças`:''}</div></div>
+  </div>
+  <div class="intel-section">
+    <div class="intel-section-title">📆 Evolução mensal <span>total vendido, recebido e pendente</span></div>
+    ${months.map(x=>`<div class="hmap-row"><div class="hmap-label">${monthLabel(x.y,x.m)}</div><div class="hmap-bar-wrap"><div class="hmap-bar" style="width:${Math.round(x.total/max*100)}%;background:var(--pink)">${fmt(x.total)}</div></div><div class="hmap-val">${x.qty} pç</div></div>`).join('')}
+  </div>
+  <div class="intel-section">
+    <div class="intel-section-title">🏆 Produtos do mês <span>${monthFull(cy,cm)}</span></div>
+    ${top.length?top.map(([n,q])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:7px 0;font-size:12px"><span style="color:var(--text2)">${n}</span><strong style="color:var(--pink);font-family:var(--mono)">${q}</strong></div>`).join(''):'<div class="empty">Sem vendas neste mês.</div>'}
+  </div>`;
+}
+
+function intelRecorrencia(el){
+  const map={};
+  DB.clients.forEach(c=>{map[clientKey(c.name)]={name:c.name,client:c,sales:[]};});
+  DB.sales.forEach(s=>{const name=saleClientName(s),key=clientKey(name);if(!map[key])map[key]={name,sales:[]};map[key].sales.push(s);});
+  const rows=Object.values(map).map(r=>{const paid=r.sales.filter(s=>!s.pending),last=[...r.sales].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];const total=r.sales.reduce((a,s)=>a+(s.total||0),0),received=paid.reduce((a,s)=>a+(s.total||0),0),qty=r.sales.reduce((a,s)=>a+saleQty(s),0);const days=last?Math.round((Date.now()-new Date(last.date))/86400000):999;let level='Lead';if(r.sales.length>=4||received>=250)level='Fiel';else if(r.sales.length>=2)level='Recorrente';else if(r.sales.length===1)level='Primeira compra';if(days>60&&r.sales.length>0)level='Reativar';return{...r,total,received,qty,days,level,last};}).sort((a,b)=>b.received-a.received||b.sales.length-a.sales.length);
+  const active=rows.filter(r=>r.sales.length),repeat=active.filter(r=>r.sales.length>=2),fiel=active.filter(r=>r.level==='Fiel'),risk=active.filter(r=>r.level==='Reativar');
+  const recRate=active.length?Math.round(repeat.length/active.length*100):0;
+  const levelColor={Fiel:'var(--purple)',Recorrente:'var(--green)',['Primeira compra']:'var(--blue)',Reativar:'var(--red)',Lead:'var(--text3)'};
+  el.innerHTML=`<div class="intel-grid" style="margin-bottom:1rem">
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--green),var(--teal))"><div class="intel-label">Taxa de recorrência</div><div class="intel-val" style="color:var(--green)">${recRate}%</div><div class="intel-sub">${repeat.length} de ${active.length} clientes compraram 2+ vezes</div></div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--purple),var(--pink))"><div class="intel-label">Clientes fiéis</div><div class="intel-val" style="color:var(--purple)">${fiel.length}</div><div class="intel-sub">4+ compras ou R$ 250+ recebido</div></div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--red),var(--amber))"><div class="intel-label">Reativar</div><div class="intel-val" style="color:var(--red)">${risk.length}</div><div class="intel-sub">60+ dias sem compra</div></div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--blue),var(--purple))"><div class="intel-label">Peças por cliente</div><div class="intel-val">${active.length?Math.round(active.reduce((a,r)=>a+r.qty,0)/active.length*10)/10:0}</div><div class="intel-sub">média por cliente com compra</div></div>
+  </div>
+  <div class="intel-section">
+    <div class="intel-section-title">🔁 Níveis de relacionamento <span>automaticamente calculado</span></div>
+    ${rows.slice(0,18).map(r=>`<div style="display:grid;grid-template-columns:minmax(130px,1fr) 110px 80px 80px;gap:8px;align-items:center;border-bottom:1px solid var(--border);padding:8px 0;font-size:12px"><span style="color:var(--text)">${r.name}</span><span class="badge" style="background:${levelColor[r.level]}20;color:${levelColor[r.level]};border-color:${levelColor[r.level]}40">${r.level}</span><span style="color:var(--text2);font-family:var(--mono)">${r.sales.length} compra${r.sales.length!==1?'s':''}</span><span style="color:var(--green);font-family:var(--mono);text-align:right">${fmt(r.received)}</span></div>`).join('')||'<div class="empty">Sem clientes cadastrados.</div>'}
+  </div>`;
+}
+
+function intelMetas(el){
+  const now=new Date(),cur=monthStats(now.getFullYear(),now.getMonth()),allPending=DB.sales.filter(s=>s.pending).reduce((a,s)=>a+(s.total||0),0);
+  const a=DB.meta?.analytics||{},monthly=DB.meta?.monthly||0,profit=a.profitGoal||0,pendingLimit=a.pendingLimit||0,marketing=a.marketingBudget||0,cash=a.cashReserve||0;
+  const mktSpent=DB.expenses.filter(e=>normTxt(e.cat+' '+e.desc).includes('marketing')).reduce((s,e)=>s+(e.value||0),0);
+  el.innerHTML=`<div class="intel-section">
+    <div class="intel-section-title">🎯 Metas financeiras <span>salva em meta, não altera vendas</span></div>
+    <div class="fr fr3">
+      <div class="fl"><label>Meta de faturamento mensal</label><input id="goal-monthly" type="number" step="0.01" value="${monthly}"></div>
+      <div class="fl"><label>Meta de lucro operacional</label><input id="goal-profit" type="number" step="0.01" value="${profit}"></div>
+      <div class="fl"><label>Limite saudável a receber</label><input id="goal-pending" type="number" step="0.01" value="${pendingLimit}"></div>
+    </div>
+    <div class="fr">
+      <div class="fl"><label>Verba mensal de marketing</label><input id="goal-marketing" type="number" step="0.01" value="${marketing}"></div>
+      <div class="fl"><label>Reserva de caixa desejada</label><input id="goal-cash" type="number" step="0.01" value="${cash}"></div>
+    </div>
+    <button class="btn" onclick="saveGoalMeta()">Salvar metas</button>
+  </div>
+  <div class="intel-section">
+    <div class="intel-section-title">📌 Acompanhamento do mês <span>${monthFull(now.getFullYear(),now.getMonth())}</span></div>
+    ${goalBar('Faturamento recebido',cur.received,monthly,'var(--pink)',monthly?`${Math.max(0,100-Math.round(cur.received/monthly*100))}% restante para bater a meta`:null)}
+    ${goalBar('Lucro operacional',cur.opProfit,profit,cur.opProfit>=0?'var(--green)':'var(--red)',profit?`lucro considera vendas pagas, CMV e despesas operacionais`:null)}
+    ${goalBar('A receber total',allPending,pendingLimit||allPending,'var(--amber)',pendingLimit?`${allPending>pendingLimit?'acima':'dentro'} do limite definido`:null)}
+    ${goalBar('Marketing usado',mktSpent,marketing,'var(--blue)',marketing?`acompanha despesas marcadas como Marketing`:null)}
+  </div>`;
+}
+
+function intelCanais(el){
+  const cMap={};ACQ_CHANNELS.forEach(c=>cMap[c.id]={...c,clients:0,sales:0,received:0,total:0});
+  DB.clients.forEach(c=>{const id=c.channel||inferChannel(c);(cMap[id]||cMap['sem-canal']).clients++;});
+  DB.sales.forEach(s=>{const c=DB.clients.find(x=>x.id==s.clientId)||DB.clients.find(x=>clientKey(x.name)===clientKey(saleClientName(s)));const id=c?(c.channel||inferChannel(c)):'sem-canal';const row=cMap[id]||cMap['sem-canal'];row.sales++;row.total+=s.total||0;if(!s.pending)row.received+=s.total||0;});
+  const rows=Object.values(cMap).sort((a,b)=>b.total-a.total);const max=Math.max(1,...rows.map(r=>r.total));
+  el.innerHTML=`<div class="intel-section">
+    <div class="intel-section-title">🧭 Aquisição por canal <span>indicação, redes, tráfego, influenciador e parcerias</span></div>
+    ${rows.map(r=>`<div class="hmap-row"><div class="hmap-label" style="color:${r.color}">${r.label}</div><div class="hmap-bar-wrap"><div class="hmap-bar" style="width:${Math.round(r.total/max*100)}%;background:${r.color}">${fmt(r.total)}</div></div><div class="hmap-val">${r.clients} cli.</div></div>`).join('')}
+  </div>
+  <div class="intel-section">
+    <div class="intel-section-title">✍️ Classificar clientes <span>isso melhora a leitura no longo prazo</span></div>
+    ${DB.clients.map(c=>{const val=c.channel||inferChannel(c);return`<div style="display:grid;grid-template-columns:minmax(130px,1fr) 180px;gap:8px;align-items:center;border-bottom:1px solid var(--border);padding:7px 0"><span style="font-size:12px;color:var(--text2)">${c.name}</span><select onchange="saveClientChannel(${c.id},this.value)" style="font-size:11px;padding:5px 8px;border-radius:8px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:var(--mono)">${ACQ_CHANNELS.map(ch=>`<option value="${ch.id}"${ch.id===val?' selected':''}>${ch.label}</option>`).join('')}</select></div>`;}).join('')||'<div class="empty">Sem clientes cadastrados.</div>'}
+  </div>`;
+}
+
+function intelParcerias(el){
+  const items=_salesItems();const col={};items.forEach(i=>{const p=getP(i.pid);if(p)col[p.col||'basica']=(col[p.col||'basica']||0)+(i.qty||1);});
+  const topCol=Object.entries(col).sort((a,b)=>b[1]-a[1])[0]?.[0]||'personagens';
+  const repeatNames=DB.clients.filter(c=>{const n=clientKey(c.name);return DB.sales.filter(s=>clientKey(saleClientName(s))===n).length>=2;}).slice(0,6);
+  const ideas=[
+    {t:'Indicação premiada',why:'Clientes recorrentes podem trazer amigas com menor custo.',act:`Começar com ${repeatNames.map(c=>c.name).join(', ')||'as clientes que já compraram mais de uma vez'}: cupom simples para quem indicar.`},
+    {t:'Microinfluenciadora local',why:'Ajuda a validar peças novas com prova social.',act:'Escolher 1 perfil local pequeno, enviar 1 camiseta em troca de 3 stories e código rastreável.'},
+    {t:'Parceria por nicho',why:`A coleção mais forte agora é ${COL_META_L[topCol]||topCol}.`,act:`Criar combo/mostruário focado em ${COL_META_L[topCol]||topCol} para escola, igreja, academia ou salão.`},
+    {t:'Lista VIP de reposição',why:'Quem já comprou responde melhor quando a peça volta.',act:'Quando repor estoque, mandar primeiro para clientes Fiéis/Recorrentes antes de postar geral.'}
+  ];
+  el.innerHTML=`<div class="intel-grid" style="margin-bottom:1rem">
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--purple),var(--pink))"><div class="intel-label">Coleção para parceria</div><div class="intel-val" style="font-size:18px">${COL_META_L[topCol]||topCol}</div><div class="intel-sub">${col[topCol]||0} peças vendidas</div></div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--green),var(--teal))"><div class="intel-label">Clientes porta de entrada</div><div class="intel-val">${repeatNames.length}</div><div class="intel-sub">boas para indicação</div></div>
+  </div>
+  <div class="intel-section">
+    <div class="intel-section-title">🤝 Ideias de parceria <span>ações práticas para testar</span></div>
+    ${ideas.map(i=>`<div style="border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;background:var(--bg2)"><div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">${i.t}</div><div style="font-size:12px;color:var(--text3);margin-bottom:8px">${i.why}</div><div style="font-size:12px;color:var(--text2)">${i.act}</div></div>`).join('')}
+  </div>`;
+}
 
 function intelColecoes(el){
   const COL_META={personagens:{label:'👾 Personagens',color:'var(--purple)',bg:'var(--purplebg)'},religiosa:{label:'✝️ Religiosas',color:'var(--teal)',bg:'var(--tealbg)'},basica:{label:'⚫ Básicas',color:'var(--text3)',bg:'var(--bg3)'},brasil:{label:'🇧🇷 Brasil',color:'var(--green)',bg:'var(--greenbg)'},urbana:{label:'🏙️ Urbana',color:'var(--blue)',bg:'var(--bluebg)'},natureza:{label:'🌸 Natureza',color:'var(--pink)',bg:'var(--pinkbg)'},academia:{label:'💪 Academia',color:'var(--amber)',bg:'var(--amberbg)'}};
@@ -2166,3 +2324,4 @@ loadData();
 </script>
 </body>
 </html>
+
