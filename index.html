@@ -474,6 +474,7 @@ tr:hover td{background:var(--bg3)}
     <button class="intel-tab" onclick="switchIntel('metas',this)">🎯 Metas</button>
     <button class="intel-tab" onclick="switchIntel('canais',this)">🧭 Canais</button>
     <button class="intel-tab" onclick="switchIntel('parcerias',this)">🤝 Parcerias</button>
+    <button class="intel-tab" onclick="switchIntel('jornada',this)">🛤 Jornada</button>
     <button class="intel-tab" onclick="switchIntel('estoque',this)">📦 Estoque</button>
     <button class="intel-tab" onclick="switchIntel('dre',this)">📊 DRE</button>
   </div>
@@ -813,7 +814,7 @@ function showMetricDetail(type){
   } else if(type==='lucro'){
     title='📊 Lucro operacional';
     const rev=paid.reduce((s,v)=>s+v.total,0);
-    const cst=DB.sales.reduce((s,v)=>s+tcSale(v),0);
+    const cst=paid.reduce((s,v)=>s+tcSale(v),0);
     const isR=e=>(e.cat||'').toLowerCase().includes('reposi');
     const expTotal=DB.expenses.filter(e=>!isR(e)).reduce((s,e)=>s+e.value,0);
     const reposT=DB.expenses.filter(e=>isR(e)).reduce((s,e)=>s+e.value,0);
@@ -825,7 +826,7 @@ function showMetricDetail(type){
       <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--bg3);border-radius:10px;font-size:13px"><span style="color:var(--text2)">(−) Custo das mercadorias (CMV)</span><span style="color:var(--red);font-family:var(--mono)">${fmt2(cst)}</span></div>
       <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--greenbg);border-radius:10px;font-size:13px;border:1px solid var(--green)"><span style="color:var(--text)">= Lucro bruto</span><span style="color:var(--green);font-weight:600;font-family:var(--mono)">${fmt2(lucroBruto)}</span></div>
       <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--bg3);border-radius:10px;font-size:13px"><span style="color:var(--text2)">(−) Despesas operacionais</span><span style="color:var(--red);font-family:var(--mono)">${fmt2(expTotal)}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:12px;background:${lucroLiq>=0?'var(--greenbg)':'var(--redbg)'};border-radius:10px;font-size:14px;font-weight:600;border:1px solid ${lucroLiq>=0?'var(--green)':'var(--red)'}"><span>= Lucro real</span><span style="color:${lucroLiq>=0?'var(--green)':'var(--red)'};font-family:var(--mono)">${fmt2(lucroLiq)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:12px;background:${lucroLiq>=0?'var(--greenbg)':'var(--redbg)'};border-radius:10px;font-size:14px;font-weight:600;border:1px solid ${lucroLiq>=0?'var(--green)':'var(--red)'}"><span>= Lucro operacional</span><span style="color:${lucroLiq>=0?'var(--green)':'var(--red)'};font-family:var(--mono)">${fmt2(lucroLiq)}</span></div>
       <div style="text-align:center;font-size:12px;color:var(--text3);margin-top:4px">Margem líquida: <strong style="color:${mg>=20?'var(--green)':'var(--amber)'}">${mg}%</strong></div>
       ${reposT>0?`<div style="margin-top:12px;padding:10px 12px;background:var(--bluebg);border-radius:10px;border:1px solid var(--blue);font-size:12px"><div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">📦 Reinvestimento em estoque</span><span style="color:var(--blue);font-weight:600;font-family:var(--mono)">${fmt2(reposT)}</span></div><div style="font-size:11px;color:var(--text3);margin-top:4px">Valor usado para comprar novas camisetas — vira receita quando vender, não é perda.</div></div>`:''}  
     </div>`;
@@ -853,11 +854,12 @@ function showMetricDetail(type){
 }function renderHome(){
   const paid=DB.sales.filter(s=>!s.pending),pend=DB.sales.filter(s=>s.pending);
   const rev=paid.reduce((s,v)=>s+v.total,0),pendRev=pend.reduce((s,v)=>s+v.total,0);
-  const cst=DB.sales.reduce((s,v)=>s+tcSale(v),0);
+  const cst=paid.reduce((s,v)=>s+tcSale(v),0);
   const isRepos=e=>(e.cat||'').toLowerCase().includes('reposi');
   const despOp=DB.expenses.filter(e=>!isRepos(e)),despRepos=DB.expenses.filter(e=>isRepos(e));
   const expTotal=despOp.reduce((s,e)=>s+e.value,0),reposTotal=despRepos.reduce((s,e)=>s+e.value,0);
   const profit=rev-cst-expTotal,margin=rev>0?Math.round((profit/rev)*100):0;
+  const cashFlow=rev-expTotal-reposTotal;
   const qty=DB.sales.reduce((s,v)=>s+(v.items?v.items.reduce((a,i)=>a+(i.qty||1),0):(v.qty||1)),0);
   const stk=ALL.reduce((a,p)=>a+(DB.stock[p.id]||0),0),zeroStk=ALL.filter(p=>(DB.stock[p.id]||0)===0).length;
   const now=new Date(),monthRev=paid.filter(v=>{const d=new Date(v.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce((s,v)=>s+v.total,0);
@@ -867,6 +869,7 @@ function showMetricDetail(type){
     <div class="metric amber" style="cursor:pointer" onclick="showMetricDetail('areceber')"><div class="ml">A receber ↗</div><div class="mv">${fmt(pendRev)}</div><div class="ms">${pend.length} pendentes</div></div>
     <div class="metric red" style="cursor:pointer" onclick="showMetricDetail('despesas')"><div class="ml">Despesas operacionais ↗</div><div class="mv">${fmt(expTotal)}</div><div class="ms">${despOp.length} lançamentos${reposTotal>0?' · '+fmt(reposTotal)+' reinvest.':''}</div></div>
     <div class="metric green" style="cursor:pointer" onclick="showMetricDetail('lucro')"><div class="ml">Lucro operacional ↗</div><div class="mv">${fmt(profit)}</div><div class="ms">margem ${margin}%${reposTotal>0?' (excl. restock)':''}</div></div>
+    <div class="metric amber"><div class="ml">Caixa pós reinvest.</div><div class="mv">${fmt(cashFlow)}</div><div class="ms">recebido - operação - reposição</div></div>
     <div class="metric blue"><div class="ml">Peças vendidas</div><div class="mv">${qty}</div></div>
     <div class="metric teal" style="cursor:pointer" onclick="showMetricDetail('estoque')"><div class="ml">Estoque ↗</div><div class="mv">${stk}</div><div class="ms">${zeroStk} zerados</div></div>
     <div class="metric purple"><div class="ml">Potencial receita</div><div class="mv">${fmt(potRev)}</div></div>
@@ -1447,7 +1450,7 @@ function getClientProfile(clientId){
 }
 
 function renderConferencia(){_intelTab='colecoes';document.querySelectorAll('.intel-tab').forEach((b,i)=>{b.classList.toggle('active',i===0);});renderIntelPanel();}
-function renderIntelPanel(){const el=document.getElementById('intel-panel');if(!el)return;const fns={colecoes:intelColecoes,cores:intelCores,pagamentos:intelPagamentos,calendario:intelCalendario,clientes:intelClientes,mensal:intelMensal,recorrencia:intelRecorrencia,metas:intelMetas,canais:intelCanais,parcerias:intelParcerias,estoque:intelEstoque,dre:intelDRE};(fns[_intelTab]||intelColecoes)(el);}
+function renderIntelPanel(){const el=document.getElementById('intel-panel');if(!el)return;const fns={colecoes:intelColecoes,cores:intelCores,pagamentos:intelPagamentos,calendario:intelCalendario,clientes:intelClientes,mensal:intelMensal,recorrencia:intelRecorrencia,metas:intelMetas,canais:intelCanais,parcerias:intelParcerias,jornada:intelJornada,estoque:intelEstoque,dre:intelDRE};(fns[_intelTab]||intelColecoes)(el);}
 let _dreYear=new Date().getFullYear(),_dreMonth=new Date().getMonth();
 function _dreNav(d){_dreMonth+=d;if(_dreMonth>11){_dreMonth=0;_dreYear++;}if(_dreMonth<0){_dreMonth=11;_dreYear--;}renderIntelPanel();}
 function intelDRE(el){
@@ -1821,6 +1824,35 @@ function intelParcerias(el){
   </div>`;
 }
 
+function intelJornada(el){
+  const rows=DB.sales||[],paid=rows.filter(s=>!s.pending),pend=rows.filter(s=>s.pending);
+  const clientMap={};
+  DB.clients.forEach(c=>{clientMap[clientKey(c.name)]={name:c.name,client:c,sales:[]};});
+  rows.forEach(s=>{const key=clientKey(saleClientName(s));if(!clientMap[key])clientMap[key]={name:saleClientName(s),sales:[]};clientMap[key].sales.push(s);});
+  const clients=Object.values(clientMap).filter(c=>c.sales.length);
+  const first=clients.filter(c=>c.sales.length===1),repeat=clients.filter(c=>c.sales.length>=2),vip=clients.filter(c=>c.sales.length>=4||c.sales.filter(s=>!s.pending).reduce((a,s)=>a+(s.total||0),0)>=250);
+  const pendingClients=clients.filter(c=>c.sales.some(s=>s.pending));
+  const inactive=clients.filter(c=>{const last=[...c.sales].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];return last&&Math.round((Date.now()-new Date(last.date))/86400000)>=45;});
+  const recRate=clients.length?Math.round(repeat.length/clients.length*100):0;
+  const steps=[
+    {t:'1. Descoberta',metric:`${DB.clients.length} contatos no CRM`,goal:'Saber de onde veio: indicação, redes sociais, tráfego pago, influenciador ou parceria.',action:'Classificar o canal na aba Canais sempre que cadastrar ou reconhecer uma cliente.'},
+    {t:'2. Primeira compra',metric:`${first.length} clientes com 1 compra`,goal:'Transformar interesse em compra com atendimento rápido e produto fácil de escolher.',action:'Após a compra, registrar produto, pagamento e canal para medir o que trouxe resultado.'},
+    {t:'3. Pagamento e entrega',metric:`${pend.length} vendas a receber`,goal:'Manter cobrança clara sem misturar cliente boa com inadimplência real.',action:'Usar Cobranças para pendentes e marcar como recebido assim que cair no banco.'},
+    {t:'4. Experiência pós-venda',metric:`${repeat.length} clientes recorrentes`,goal:'Fazer a cliente lembrar da loja antes de procurar outra opção.',action:'Recontatar com novidade parecida com a última compra e pedir foto/feedback quando fizer sentido.'},
+    {t:'5. Recorrência e indicação',metric:`${recRate}% de recorrência`,goal:'Clientes boas virarem recompra, indicação e lista VIP de reposição.',action:'Priorizar clientes recorrentes em reposição, combos e cupom de indicação.'},
+    {t:'6. Reativação',metric:`${inactive.length} clientes 45+ dias sem compra`,goal:'Recuperar clientes quentes antes de gastar mais em tráfego.',action:'Mandar mensagem curta com peça nova alinhada ao histórico da cliente.'}
+  ];
+  el.innerHTML=`<div class="intel-grid" style="margin-bottom:1rem">
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--pink),var(--purple))"><div class="intel-label">Clientes com compra</div><div class="intel-val">${clients.length}</div><div class="intel-sub">${first.length} primeira compra · ${repeat.length} recorrentes</div></div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--green),var(--teal))"><div class="intel-label">Clientes VIP</div><div class="intel-val" style="color:var(--green)">${vip.length}</div><div class="intel-sub">4+ compras ou R$ 250+ recebido</div></div>
+    <div class="intel-card" style="--ig-accent:linear-gradient(90deg,var(--amber),var(--red))"><div class="intel-label">Acompanhar cobrança</div><div class="intel-val" style="color:var(--amber)">${pendingClients.length}</div><div class="intel-sub">clientes com alguma pendência</div></div>
+  </div>
+  <div class="intel-section">
+    <div class="intel-section-title">🛤 Jornada do cliente <span>do primeiro contato até recompra e indicação</span></div>
+    ${steps.map(s=>`<div style="border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;background:var(--bg2)"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:5px"><strong style="font-size:13px;color:var(--text)">${s.t}</strong><span style="font-size:11px;color:var(--pink);font-family:var(--mono);font-weight:600;text-align:right">${s.metric}</span></div><div style="font-size:12px;color:var(--text2);margin-bottom:5px">${s.goal}</div><div style="font-size:11px;color:var(--text3)">${s.action}</div></div>`).join('')}
+  </div>`;
+}
+
 function intelColecoes(el){
   const COL_META={personagens:{label:'👾 Personagens',color:'var(--purple)',bg:'var(--purplebg)'},religiosa:{label:'✝️ Religiosas',color:'var(--teal)',bg:'var(--tealbg)'},basica:{label:'⚫ Básicas',color:'var(--text3)',bg:'var(--bg3)'},brasil:{label:'🇧🇷 Brasil',color:'var(--green)',bg:'var(--greenbg)'},urbana:{label:'🏙️ Urbana',color:'var(--blue)',bg:'var(--bluebg)'},natureza:{label:'🌸 Natureza',color:'var(--pink)',bg:'var(--pinkbg)'},academia:{label:'💪 Academia',color:'var(--amber)',bg:'var(--amberbg)'}};
   const items=_salesItems();
@@ -2068,7 +2100,7 @@ function updCost(id,t,v){if(t==='cost')DB.costs[id]=parseFloat(v)||0;else DB.fre
 function updCol(id,v){const p=ALL.find(x=>x.id===id);if(p)p.col=v;if(!DB.cols)DB.cols={};DB.cols[id]=v;scheduleSave();}
 function openRestockModal(pid){const p=getP(pid);const m=document.createElement('div');m.className='modal-bg';m.id='restock-modal';m.innerHTML=`<div class="modal"><div class="modal-t">Repor: ${sh(p?p.n:'?',26)}<button class="close-btn" onclick="closeModal()">×</button></div><div class="fr"><div class="fl"><label>Quantidade*</label><input id="rs-qty" type="number" min="1" value="1"></div><div class="fl"><label>Valor pago R$</label><input id="rs-val" type="number" step="0.01" placeholder="0,00"></div></div><div class="fr fr1"><div class="fl"><label>Observação</label><input id="rs-obs" type="text" placeholder="ex: Pedido La Mell"></div></div><button class="btn full" onclick="saveRestock(${pid})">✓ Confirmar</button></div>`;document.getElementById('modal-root').appendChild(m);}
 function saveRestock(pid){const qty=parseInt(document.getElementById('rs-qty').value)||0;if(qty<=0){alert('Informe a quantidade');return;}DB.stock[pid]=(DB.stock[pid]||0)+qty;DB.restock.push({id:Date.now(),pid,qty,value:parseFloat(document.getElementById('rs-val').value)||0,obs:document.getElementById('rs-obs').value.trim(),date:new Date().toISOString()});scheduleSave();closeModal();renderStock();}
-function renderExpenses(){const total=DB.expenses.reduce((s,e)=>s+e.value,0);const now=new Date();const mTotal=DB.expenses.filter(e=>{const d=new Date(e.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce((s,e)=>s+e.value,0);const bycat={};DB.expenses.forEach(e=>{bycat[e.cat]=(bycat[e.cat]||0)+e.value;});const top=Object.entries(bycat).sort((a,b)=>b[1]-a[1])[0];document.getElementById('exp-metrics').innerHTML=`<div class="metric red"><div class="ml">Total despesas</div><div class="mv">${fmt(total)}</div><div class="ms">${DB.expenses.length} lançamentos</div></div><div class="metric amber"><div class="ml">Este mês</div><div class="mv">${fmt(mTotal)}</div></div><div class="metric purple"><div class="ml">Maior gasto</div><div class="mv" style="font-size:14px">${top?top[0]:'—'}</div></div>`;const maxE=Math.max(...Object.values(bycat),1);document.getElementById('exp-by-cat').innerHTML=Object.entries(bycat).sort((a,b)=>b[1]-a[1]).map(([c,v],i)=>`<div class="bar-r"><div class="bar-l"><span class="badge ${EXP_C[c]||'bg-r'}">${c}</span></div><div class="bar-t"><div class="bar-f" style="width:${Math.round((v/maxE)*100)}%;background:${BARS[i%BARS.length]}"></div></div><div class="bar-v" style="color:var(--red);font-family:var(--mono)">${fmt(v)}</div></div>`).join('')||`<div class="empty">Nenhuma despesa</div>`;document.getElementById('exp-tbody').innerHTML=[...DB.expenses].reverse().map(e=>`<tr><td style="color:var(--text3);font-family:var(--mono)">${fmtD(e.date)}</td><td>${e.desc}</td><td><span class="badge ${EXP_C[e.cat]||'bg-r'}">${e.cat}</span></td><td style="font-weight:500;color:var(--red);font-family:var(--mono)">${fmt(e.value)}</td><td><button class="btn-del" onclick="delExp(${e.id})">✕</button></td></tr>`).join('')||`<tr><td colspan="5" class="empty">Nenhuma despesa</td></tr>`;}
+function renderExpenses(){const total=DB.expenses.reduce((s,e)=>s+e.value,0);const now=new Date();const mTotal=DB.expenses.filter(e=>{const d=new Date(e.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce((s,e)=>s+e.value,0);const bycat={};DB.expenses.forEach(e=>{bycat[e.cat]=(bycat[e.cat]||0)+e.value;});const top=Object.entries(bycat).sort((a,b)=>b[1]-a[1])[0];document.getElementById('exp-metrics').innerHTML=`<div class="metric red"><div class="ml">Saídas registradas</div><div class="mv">${fmt(total)}</div><div class="ms">${DB.expenses.length} lançamentos · inclui reinvestimento</div></div><div class="metric amber"><div class="ml">Saídas este mês</div><div class="mv">${fmt(mTotal)}</div></div><div class="metric purple"><div class="ml">Maior saída</div><div class="mv" style="font-size:14px">${top?top[0]:'—'}</div></div>`;const maxE=Math.max(...Object.values(bycat),1);document.getElementById('exp-by-cat').innerHTML=Object.entries(bycat).sort((a,b)=>b[1]-a[1]).map(([c,v],i)=>`<div class="bar-r"><div class="bar-l"><span class="badge ${EXP_C[c]||'bg-r'}">${c}</span></div><div class="bar-t"><div class="bar-f" style="width:${Math.round((v/maxE)*100)}%;background:${BARS[i%BARS.length]}"></div></div><div class="bar-v" style="color:var(--red);font-family:var(--mono)">${fmt(v)}</div></div>`).join('')||`<div class="empty">Nenhuma saída</div>`;document.getElementById('exp-tbody').innerHTML=[...DB.expenses].reverse().map(e=>`<tr><td style="color:var(--text3);font-family:var(--mono)">${fmtD(e.date)}</td><td>${e.desc}</td><td><span class="badge ${EXP_C[e.cat]||'bg-r'}">${e.cat}</span></td><td style="font-weight:500;color:var(--red);font-family:var(--mono)">${fmt(e.value)}</td><td><button class="btn-del" onclick="delExp(${e.id})">✕</button></td></tr>`).join('')||`<tr><td colspan="5" class="empty">Nenhuma saída</td></tr>`;}
 function addExpense(){const desc=document.getElementById('exp-desc').value.trim();const val=parseFloat(document.getElementById('exp-val').value)||0;if(!desc||!val){alert('Informe descrição e valor');return;}DB.expenses.push({id:Date.now(),desc,value:val,cat:document.getElementById('exp-cat').value,obs:(document.getElementById('exp-obs-f')||{value:''}).value.trim(),date:new Date().toISOString()});scheduleSave();document.getElementById('exp-desc').value='';document.getElementById('exp-val').value='';renderExpenses();}
 function delExp(id){if(!confirm('Excluir?'))return;DB.expenses=DB.expenses.filter(e=>e.id!==id);scheduleSave();renderExpenses();}
 function getRecontactMsg(clientName,lastItems,suggestName){const fn=clientName.split(' ')[0];const prod=lastItems&&lastItems.length?lastItems[0]:'sua camiseta';const sug=suggestName||'novidade';return `Oi ${fn}! 😊 Tudo bem?\n\nVi aqui que você levou a ${prod} faz um tempinho já — espero que esteja amando! 🧡\n\nChegou novidade aqui na Cê Reinvente que combina muito com você: *${sug}*. Vou te mandar uma foto! 📸`;}
@@ -2147,7 +2179,7 @@ function openClaudeModal(){
   const now=new Date();
   const paid=DB.sales.filter(s=>!s.pending),pend=DB.sales.filter(s=>s.pending);
   const rev=paid.reduce((s,v)=>s+v.total,0),pendRev=pend.reduce((s,v)=>s+v.total,0);
-  const cst=DB.sales.reduce((s,v)=>s+tcSale(v),0);
+  const cst=paid.reduce((s,v)=>s+tcSale(v),0);
   const isRepos=e=>(e.cat||'').toLowerCase().includes('reposi');
   const despOp=DB.expenses.filter(e=>!isRepos(e)),despRepos=DB.expenses.filter(e=>isRepos(e));
   const expTotal=despOp.reduce((s,e)=>s+e.value,0),reposTotal=despRepos.reduce((s,e)=>s+e.value,0);
