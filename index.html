@@ -453,9 +453,19 @@ tr:hover td{background:var(--bg3)}
 </div>
 
 <div class="sec" id="sec-cobrancas">
-  <div id="charge-kpis"></div>
-  <div id="charge-list"></div>
-  <div id="charge-scripts"></div>
+  <div style="display:flex;gap:6px;margin-bottom:1rem">
+    <button id="btn-tab-cobranca" onclick="switchChargeTab('cobranca')" style="padding:5px 16px;border-radius:20px;border:1px solid var(--pink);background:var(--pink);color:#fff;font-size:12px;cursor:pointer;font-family:var(--font)">Cobrança</button>
+    <button id="btn-tab-devedores" onclick="switchChargeTab('devedores')" style="padding:5px 16px;border-radius:20px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font)">Devedores</button>
+  </div>
+  <div id="charge-panel">
+    <div id="charge-kpis"></div>
+    <div id="charge-list"></div>
+    <div id="charge-scripts"></div>
+  </div>
+  <div id="devedores-panel" style="display:none">
+    <div id="devedores-resumo"></div>
+    <div id="devedores-table"></div>
+  </div>
 </div>
 
 <div class="sec" id="sec-trocas">
@@ -980,6 +990,7 @@ function registerSale(){const crmId=document.getElementById('sel-crm-client').va
 function applyPendingOrders(){
   if(!DB.meta)DB.meta={};
   if(!DB.meta.appliedOrders)DB.meta.appliedOrders=[];
+  if(!DB.meta.partialPayments)DB.meta.partialPayments=[];
   const ORDERS=[
     {id:'lamell_20260620',date:'2026-06-20',desc:'Reposição La Mell',value:377.05,
      items:[333,334,335,336,337,338,339,340,341,342,343,344,345,346]}
@@ -1226,6 +1237,99 @@ function renderCobrancas(){
     ].map(({t,s,m})=>`<div class="msg-card"><div class="msg-card-info"><div class="msg-card-title">${t}</div><div class="msg-card-sub">${s}</div></div><button class="charge-btn charge-btn-copy" style="flex:none;min-width:80px" onclick="copyMsg('${m.replace(/'/g,"\\'")}')">📋 Copiar</button></div>`).join('')}`;
 }
 function markAllPaid(ids){if(!confirm(`Marcar ${ids.length} venda(s) como paga(s)?`))return;ids.forEach(id=>{const i=DB.sales.findIndex(s=>s.id===id);if(i<0||!DB.sales[i].pending)return;DB.sales[i].pay='Pix';DB.sales[i].pending=false;});recalcClientTotals();forceSave();renderCobrancas();renderHome();}
+let _chargeTab='cobranca';
+function switchChargeTab(t){
+  _chargeTab=t;
+  document.getElementById('charge-panel').style.display=t==='cobranca'?'':'none';
+  document.getElementById('devedores-panel').style.display=t==='devedores'?'':'none';
+  const active='padding:5px 16px;border-radius:20px;border:1px solid var(--pink);background:var(--pink);color:#fff;font-size:12px;cursor:pointer;font-family:var(--font)';
+  const inactive='padding:5px 16px;border-radius:20px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font)';
+  document.getElementById('btn-tab-cobranca').style.cssText=t==='cobranca'?active:inactive;
+  document.getElementById('btn-tab-devedores').style.cssText=t==='devedores'?active:inactive;
+  if(t==='devedores')renderDevedores();
+}
+function getParcial(saleId){return(DB.meta.partialPayments||[]).filter(p=>p.saleId===saleId).reduce((s,p)=>s+p.amount,0);}
+function addPartialPayment(saleId,amount,obs){
+  if(!DB.meta.partialPayments)DB.meta.partialPayments=[];
+  DB.meta.partialPayments.push({saleId,amount,date:new Date().toISOString(),obs});
+  scheduleSave();renderDevedores();
+}
+function showPartialForm(saleId,clientName,total){
+  const already=getParcial(saleId);
+  const saldo=total-already;
+  const val=prompt(`${clientName} — Saldo restante: R$ ${saldo.toFixed(2).replace('.',',')}\nValor recebido agora (R$):`);
+  if(!val)return;
+  const amount=parseFloat(val.replace(',','.'));
+  if(isNaN(amount)||amount<=0){alert('Valor inválido');return;}
+  if(amount>=saldo){
+    if(confirm(`Valor igual ou maior que o saldo. Marcar como totalmente pago?`)){
+      markAllPaid([saleId]);return;
+    }
+  }
+  const obs=prompt('Observação (opcional):','')||'';
+  addPartialPayment(saleId,amount,obs);
+}
+function renderDevedores(){
+  const all=DB.sales;
+  const rows=all.map(s=>{
+    const parcial=getParcial(s.id);
+    const total=s.total||0;
+    const pago=s.pending?(parcial):(total);
+    const saldo=total-pago;
+    let status=s.pending?(parcial>0?'Parcial':'Pendente'):'Pago';
+    const d=new Date(s.date);
+    const mes=d.getFullYear()===2026&&d.getMonth()===5?'Junho':d.getFullYear()===2026&&d.getMonth()===6?'Julho':'Outro';
+    const label=s.items?s.items.map(i=>{const p=getP(i.pid);return(p?p.n:'?')+' x'+i.qty;}).join(', '):(getP(s.productId)?.n||'?');
+    return{id:s.id,mes,data:fmtD2(s.date),cliente:s.client||'—',label,total,pago,saldo,status,obs:(DB.meta.partialPayments||[]).filter(p=>p.saleId===s.id).map(p=>`Pagou R$${p.amount.toFixed(2).replace('.',',')}${p.obs?' ('+p.obs+')':''}`).join('; ')};
+  });
+  const meses=['Junho','Julho','Outro'];
+  const resumoMes=meses.map(m=>{
+    const mr=rows.filter(r=>r.mes===m);
+    if(!mr.length)return null;
+    return{mes:m,qtd:mr.length,total:mr.reduce((s,r)=>s+r.total,0),pago:mr.reduce((s,r)=>s+r.pago,0),saldo:mr.reduce((s,r)=>s+r.saldo,0)};
+  }).filter(Boolean);
+  const geral={qtd:rows.length,total:rows.reduce((s,r)=>s+r.total,0),pago:rows.reduce((s,r)=>s+r.pago,0),saldo:rows.reduce((s,r)=>s+r.saldo,0)};
+  const statusGroups=[
+    {s:'Pago',color:'var(--green)',bg:'#e6f5ee'},
+    {s:'Parcial',color:'#b07a00',bg:'#fffbe6'},
+    {s:'Pendente',color:'var(--red)',bg:'#fdecea'},
+  ].map(g=>{const gr=rows.filter(r=>r.status===g.s);return{...g,qtd:gr.length,total:gr.reduce((s,r)=>s+r.total,0),pago:gr.reduce((s,r)=>s+r.pago,0),saldo:gr.reduce((s,r)=>s+r.saldo,0)};});
+  const rowColor=s=>s==='Pago'?'#e6f5ee':s==='Parcial'?'#fffbe6':'#fdecea';
+  const rowTxt=s=>s==='Pago'?'var(--green)':s==='Parcial'?'#b07a00':'var(--red)';
+  document.getElementById('devedores-resumo').innerHTML=`
+    <div class="card" style="margin-bottom:1rem;overflow-x:auto">
+      <div class="ct">Resumo dos devedores</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:var(--bg3)">${['Mês','Qtd','Total vendido','Total pago','Saldo aberto'].map(h=>`<th style="padding:8px 10px;text-align:left;font-weight:600;color:var(--text2);white-space:nowrap">${h}</th>`).join('')}</tr></thead>
+        <tbody>
+          ${resumoMes.map(m=>`<tr style="border-top:1px solid var(--border)"><td style="padding:7px 10px;font-weight:500">${m.mes}</td><td style="padding:7px 10px;font-family:var(--mono)">${m.qtd}</td><td style="padding:7px 10px;font-family:var(--mono)">${fmt(m.total)}</td><td style="padding:7px 10px;font-family:var(--mono);color:var(--green)">${fmt(m.pago)}</td><td style="padding:7px 10px;font-family:var(--mono);color:var(--red)">${fmt(m.saldo)}</td></tr>`).join('')}
+          <tr style="border-top:2px solid var(--border2);font-weight:700"><td style="padding:7px 10px">Geral</td><td style="padding:7px 10px;font-family:var(--mono)">${geral.qtd}</td><td style="padding:7px 10px;font-family:var(--mono)">${fmt(geral.total)}</td><td style="padding:7px 10px;font-family:var(--mono);color:var(--green)">${fmt(geral.pago)}</td><td style="padding:7px 10px;font-family:var(--mono);color:var(--red)">${fmt(geral.saldo)}</td></tr>
+        </tbody>
+      </table>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+        ${statusGroups.map(g=>`<div style="flex:1;min-width:140px;background:${g.bg};border-radius:10px;padding:10px 12px"><div style="font-size:11px;font-weight:600;color:${g.color};text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">${g.s}</div><div style="font-size:13px;font-family:var(--mono);font-weight:700;color:var(--text)">${g.qtd} • ${fmt(g.total)}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">Pago ${fmt(g.pago)} · Saldo ${fmt(g.saldo)}</div></div>`).join('')}
+      </div>
+    </div>`;
+  document.getElementById('devedores-table').innerHTML=`
+    <div class="card" style="overflow-x:auto">
+      <div class="ct">Detalhamento</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:var(--bg3)">${['Mês','Data','Cliente','Itens','Total','Pago','Saldo','Status','Ações','Obs'].map(h=>`<th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);white-space:nowrap">${h}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map(r=>`<tr style="border-top:1px solid var(--border);background:${rowColor(r.status)}22">
+          <td style="padding:6px 8px;font-size:11px;color:var(--text2)">${r.mes}</td>
+          <td style="padding:6px 8px;font-family:var(--mono);font-size:11px;white-space:nowrap">${r.data}</td>
+          <td style="padding:6px 8px;font-weight:500">${r.cliente}</td>
+          <td style="padding:6px 8px;font-size:11px;color:var(--text2);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escText(r.label)}">${escText(r.label)}</td>
+          <td style="padding:6px 8px;font-family:var(--mono);text-align:right">${fmt(r.total)}</td>
+          <td style="padding:6px 8px;font-family:var(--mono);text-align:right;color:var(--green)">${fmt(r.pago)}</td>
+          <td style="padding:6px 8px;font-family:var(--mono);text-align:right;color:${r.saldo>0?'var(--red)':'var(--green)'}">${fmt(r.saldo)}</td>
+          <td style="padding:6px 8px"><span style="font-size:11px;font-weight:600;color:${rowTxt(r.status)};background:${rowColor(r.status)};padding:2px 8px;border-radius:10px">${r.status}</span></td>
+          <td style="padding:6px 8px;white-space:nowrap">${r.status!=='Pago'?`<button onclick="showPartialForm(${r.id},'${r.cliente.replace(/'/g,"\\'")}',${r.total})" style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid var(--amber);background:var(--amberbg);color:var(--amber);cursor:pointer;margin-right:4px">+ Parcial</button><button onclick="markAllPaid([${r.id}]);renderDevedores();" style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid var(--green);background:var(--greenbg);color:var(--green);cursor:pointer">✓ Pago</button>`:''}</td>
+          <td style="padding:6px 8px;font-size:11px;color:var(--text3);max-width:160px">${r.obs||''}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+}
 let _buyFilter='zero';
 function setBuyFilter(f,btn){_buyFilter=f;document.querySelectorAll('.buy-filter-tab').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');_renderBuyList();}
 function renderSizeMap(){
