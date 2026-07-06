@@ -373,6 +373,7 @@ tr:hover td{background:var(--bg3)}
 <div class="sec active" id="sec-inicio">
   <div id="alerts-bar" style="margin-bottom:.7rem"></div>
   <div class="pending-bar" id="pending-bar"></div>
+  <div id="period-filter-bar" style="display:flex;gap:6px;margin-bottom:.6rem"></div>
   <div class="metrics" id="metrics"></div>
   <div class="meta-wrap" id="meta-card"></div>
   <div class="card" style="margin-bottom:.9rem"><div class="ct">Segurança dos dados</div><div id="backup-panel"></div></div>
@@ -924,14 +925,17 @@ function showMetricDetail(type){
   m.addEventListener('click',e=>{if(e.target===m)closeModal();});
   document.getElementById('modal-root').appendChild(m);
 }function renderHome(){
-  const paid=DB.sales.filter(s=>!s.pending),pend=DB.sales.filter(s=>s.pending);
+  const pf=periodFilter(DB.sales,DB.expenses);
+  const paid=pf.sales.filter(s=>!s.pending),pend=pf.sales.filter(s=>s.pending);
   const rev=paid.reduce((s,v)=>s+v.total,0),pendRev=pend.reduce((s,v)=>s+v.total,0);
   const cst=paid.reduce((s,v)=>s+tcSale(v),0);
   const isRepos=e=>(e.cat||'').toLowerCase().includes('reposi');
-  const despOp=DB.expenses.filter(e=>!isRepos(e)),despRepos=DB.expenses.filter(e=>isRepos(e));
+  const despOp=pf.expenses.filter(e=>!isRepos(e)),despRepos=pf.expenses.filter(e=>isRepos(e));
   const expTotal=despOp.reduce((s,e)=>s+e.value,0),reposTotal=despRepos.reduce((s,e)=>s+e.value,0);
   const profit=rev-cst-expTotal,margin=rev>0?Math.round((profit/rev)*100):0;
   const cashFlow=rev-expTotal-reposTotal;
+  const periodLabels={'all':'Tudo','month':'Este mês','quarter':'Este trimestre'};
+  document.getElementById('period-filter-bar').innerHTML=Object.entries(periodLabels).map(([k,l])=>`<button onclick="setHomePeriod('${k}')" style="padding:4px 14px;border-radius:20px;border:1px solid ${_homePeriod===k?'var(--pink)':'var(--border2)'};background:${_homePeriod===k?'var(--pink)':'var(--bg2)'};color:${_homePeriod===k?'#fff':'var(--text2)'};font-size:12px;cursor:pointer;font-family:var(--font);transition:.15s">${l}</button>`).join('');
   const qty=DB.sales.reduce((s,v)=>s+(v.items?v.items.reduce((a,i)=>a+(i.qty||1),0):(v.qty||1)),0);
   const stk=ALL.reduce((a,p)=>a+(DB.stock[p.id]||0),0),zeroStk=ALL.filter(p=>(DB.stock[p.id]||0)===0).length;
   const now=new Date(),monthRev=paid.filter(v=>{const d=new Date(v.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce((s,v)=>s+v.total,0);
@@ -1494,6 +1498,14 @@ function runBudgetSim(){
   </div>`;
 }
 let _intelTab='colecoes';
+let _homePeriod='all';
+function setHomePeriod(p){_homePeriod=p;renderHome();}
+function periodFilter(sales,expenses){
+  if(_homePeriod==='all')return{sales,expenses};
+  const now=new Date(),y=now.getFullYear(),m=now.getMonth();
+  const inPeriod=d=>{const dt=new Date(d);if(_homePeriod==='month')return dt.getFullYear()===y&&dt.getMonth()===m;if(_homePeriod==='quarter'){const q=Math.floor(m/3);return dt.getFullYear()===y&&Math.floor(dt.getMonth()/3)===q;}return true;};
+  return{sales:sales.filter(s=>inPeriod(s.date)),expenses:expenses.filter(e=>inPeriod(e.date))};
+}
 function switchIntel(tab,btn){_intelTab=tab;document.querySelectorAll('.intel-tab').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderIntelPanel();}
 const COL_META_L={personagens:'👾 Personagens',religiosa:'✝️ Religiosas',religiosas:'✝️ Religiosas',basica:'⚫ Básicas',basicas:'⚫ Básicas',brasil:'🇧🇷 Brasil',urbana:'🏙️ Urbana',natureza:'🌸 Natureza',academia:'💪 Academia'};
 const COL_COLORS={personagens:'var(--purple)',religiosa:'var(--teal)',basica:'var(--text3)',brasil:'var(--green)',urbana:'var(--blue)',natureza:'var(--pink)',academia:'var(--amber)'};
