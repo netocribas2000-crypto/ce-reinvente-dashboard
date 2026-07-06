@@ -1280,7 +1280,7 @@ function renderDevedores(){
     const d=new Date(s.date);
     const mes=d.getFullYear()===2026&&d.getMonth()===5?'Junho':d.getFullYear()===2026&&d.getMonth()===6?'Julho':'Outro';
     const label=s.items?s.items.map(i=>{const p=getP(i.pid);return(p?p.n:'?')+' x'+i.qty;}).join(', '):(getP(s.productId)?.n||'?');
-    return{id:s.id,mes,data:fmtD2(s.date),cliente:s.client||'—',label,total,pago,saldo,status,obs:(DB.meta.partialPayments||[]).filter(p=>p.saleId===s.id).map(p=>`Pagou R$${p.amount.toFixed(2).replace('.',',')}${p.obs?' ('+p.obs+')':''}`).join('; ')};
+    return{id:s.id,mes,data:fmtD(s.date),cliente:s.client||'—',label,total,pago,saldo,status,obs:(DB.meta.partialPayments||[]).filter(p=>p.saleId===s.id).map(p=>`Pagou R$${p.amount.toFixed(2).replace('.',',')}${p.obs?' ('+p.obs+')':''}`).join('; ')};
   });
   const meses=['Junho','Julho','Outro'];
   const resumoMes=meses.map(m=>{
