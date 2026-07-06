@@ -354,6 +354,8 @@ tr:hover td{background:var(--bg3)}
       <button class="tab" onclick="gt('venda',this)">+ Venda</button>
       <button class="tab" onclick="gt('estoque',this)">Estoque</button>
       <button class="tab" onclick="gt('cobrancas',this)">Cobranças</button>
+      <button class="tab" onclick="gt('trocas',this)">Trocas</button>
+      <button class="tab" onclick="gt('indicacoes',this)">Indicações</button>
       <button class="tab" onclick="gt('compras',this)">Comprar</button>
       <button class="tab" onclick="gt('conferencia',this)">Inteligência</button>
       <button class="tab" onclick="gt('despesas',this)">Despesas</button>
@@ -453,6 +455,74 @@ tr:hover td{background:var(--bg3)}
   <div id="charge-kpis"></div>
   <div id="charge-list"></div>
   <div id="charge-scripts"></div>
+</div>
+
+<div class="sec" id="sec-trocas">
+  <div class="metrics" id="return-metrics"></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="ct">Nova troca ou devolução</div>
+      <div class="bin-info" style="margin-bottom:10px">Controle separado: lançar aqui não altera os números atuais do dashboard, estoque ou caixa.</div>
+      <div class="fr">
+        <div class="fl"><label>Cliente</label><input type="text" id="ret-client" placeholder="Nome da cliente"></div>
+        <div class="fl"><label>Tipo</label><select id="ret-type" onchange="renderReturnFormHint()"><option>Troca simples</option><option>Troca com diferença</option><option>Devolução</option><option>Crédito para próxima compra</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fl"><label>Produto devolvido</label><select id="ret-old-prod"></select></div>
+        <div class="fl"><label>Produto entregue</label><select id="ret-new-prod"></select></div>
+      </div>
+      <div class="fr fr3">
+        <div class="fl"><label>Valor original R$</label><input type="number" id="ret-original" step="0.01" placeholder="0,00"></div>
+        <div class="fl"><label>Diferença recebida R$</label><input type="number" id="ret-diff-in" step="0.01" placeholder="0,00"></div>
+        <div class="fl"><label>Valor devolvido/crédito R$</label><input type="number" id="ret-refund" step="0.01" placeholder="0,00"></div>
+      </div>
+      <div class="fr">
+        <div class="fl"><label>Status</label><select id="ret-status"><option>Resolvido</option><option>Pendente</option></select></div>
+        <div class="fl"><label>Observação</label><input type="text" id="ret-obs" placeholder="ex: cliente trocou tamanho/cor"></div>
+      </div>
+      <div class="sale-preview" id="ret-hint"></div>
+      <button class="btn full" onclick="addReturn()">✓ Registrar sem mexer nos números</button>
+    </div>
+    <div class="card">
+      <div class="ct">Como usar</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6">
+        <b>Troca simples:</b> mesmo valor, só registra histórico.<br>
+        <b>Troca com diferença:</b> anote apenas a diferença recebida ou devolvida.<br>
+        <b>Devolução:</b> anote o valor que saiu ou virou crédito.<br>
+        <b>Estoque:</b> ajuste manualmente na aba Estoque quando a peça voltar ou sair.
+      </div>
+    </div>
+  </div>
+  <div class="card"><div class="ct">Histórico de trocas e devoluções</div><div class="tw"><table><thead><tr><th>Data</th><th>Cliente</th><th>Tipo</th><th>Devolveu</th><th>Levou</th><th>Impacto caixa</th><th>Status</th><th></th></tr></thead><tbody id="return-tbody"></tbody></table></div></div>
+</div>
+
+<div class="sec" id="sec-indicacoes">
+  <div class="metrics" id="ref-metrics"></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="ct">Nova indicação</div>
+      <div class="bin-info" style="margin-bottom:10px">Controle separado: indicações ajudam a medir crescimento, mas não alteram faturamento sem uma venda registrada.</div>
+      <div class="fr">
+        <div class="fl"><label>Cliente que indicou</label><input type="text" id="ref-from" placeholder="Nome da cliente"></div>
+        <div class="fl"><label>Cliente indicada</label><input type="text" id="ref-to" placeholder="Nome da indicada"></div>
+      </div>
+      <div class="fr fr3">
+        <div class="fl"><label>Status</label><select id="ref-status"><option>Indicada</option><option>Entrou em contato</option><option>Comprou</option><option>Não respondeu</option></select></div>
+        <div class="fl"><label>Valor da compra R$</label><input type="number" id="ref-value" step="0.01" placeholder="0,00"></div>
+        <div class="fl"><label>Recompensa/crédito R$</label><input type="number" id="ref-reward" step="0.01" placeholder="0,00"></div>
+      </div>
+      <div class="fr">
+        <div class="fl"><label>Canal</label><select id="ref-channel"><option>Indicação direta</option><option>WhatsApp</option><option>Instagram</option><option>Presencial</option><option>Outro</option></select></div>
+        <div class="fl"><label>Observação</label><input type="text" id="ref-obs" placeholder="ex: cliente sempre indica amigas"></div>
+      </div>
+      <button class="btn full" onclick="addReferral()">✓ Registrar indicação</button>
+    </div>
+    <div class="card">
+      <div class="ct">Cliente embaixadora</div>
+      <div id="ref-champions"></div>
+    </div>
+  </div>
+  <div class="card"><div class="ct">Histórico de indicações</div><div class="tw"><table><thead><tr><th>Data</th><th>Indicou</th><th>Indicada</th><th>Status</th><th>Compra</th><th>Recompensa</th><th></th></tr></thead><tbody id="ref-tbody"></tbody></table></div></div>
 </div>
 
 <div class="sec" id="sec-compras">
@@ -644,7 +714,7 @@ const EXP_C={'Frete envio':'bg-b','Embalagem':'bg-a','Taxa Pix/cartão':'bg-r','
 const BARS=['linear-gradient(90deg,#8B3A52,#C9748A)','linear-gradient(90deg,#C9984A,#E8BE78)','linear-gradient(90deg,#2D7A50,#4FAF7C)','linear-gradient(90deg,#4A6FA5,#7A9FD5)','linear-gradient(90deg,#7B5EA7,#AB8ED7)'];
 
 // ─── STATE ────────────────────────────────────────────────────
-let DB={sales:[],stock:{},costs:{},freights:{},clients:[],suppliers:[],expenses:[],restock:[],meta:{monthly:0}};
+let DB={sales:[],stock:{},costs:{},freights:{},clients:[],suppliers:[],expenses:[],restock:[],returns:[],referrals:[],meta:{monthly:0}};
 let cartItems=[{pid:1,qty:1,price:59.90,cost:23.98,freight:0}];
 let saveTimer=null;
 
@@ -690,6 +760,8 @@ async function loadData(){initTheme();
   if(localData&&lAt>=sAt){DB={...DB,...localData};setSS(lAt>sAt?'💾 Local (mais atual)':'☁️ Sheets + Local','green');}
   else if(sheetsData){DB={...DB,...sheetsData};setSS('☁️ Sheets','green');}
   else if(localData){DB={...DB,...localData};setSS('💾 Local','amber');}
+  if(!Array.isArray(DB.returns))DB.returns=[];
+  if(!Array.isArray(DB.referrals))DB.referrals=[];
   try{localStorage.setItem(LOCAL_KEY,JSON.stringify(DB));}catch(e){}
   ALL.forEach(p=>{
     if(DB.stock[p.id]===undefined)DB.stock[p.id]=1;
@@ -758,7 +830,7 @@ const ini=n=>(n||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
 const getP=id=>ALL.find(x=>x.id===id||x.id==id);
 const tcSale=v=>{if(v.items)return v.items.reduce((s,i)=>s+((i.costUnit||0)+(i.freightUnit||0))*(i.qty||1),0);const c=v.costUnit!==undefined?v.costUnit:(DB.costs[v.productId]||0);const f=v.freightUnit!==undefined?v.freightUnit:(DB.freights[v.productId]||0);return(c+f)*(v.qty||1);};
 function markPaid(id){const i=DB.sales.findIndex(s=>s.id===id);if(i<0||!DB.sales[i].pending)return;DB.sales[i].pay='Pix';DB.sales[i].pending=false;DB.sales[i].obs='';recalcClientTotals();forceSave();renderSalesTable();renderHome();}
-function gt(t,btn){document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));document.getElementById('sec-'+t).classList.add('active');if(btn)btn.classList.add('active');({inicio:renderHome,venda:()=>{renderCart();buildCRMSelect();renderSalesTable();},estoque:renderStock,cobrancas:renderCobrancas,compras:renderCompras,conferencia:renderConferencia,despesas:renderExpenses,crm:renderCRM,fornecedores:renderSuppliers,estrategias:renderEstrategias})[t]();}
+function gt(t,btn){document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));document.getElementById('sec-'+t).classList.add('active');if(btn)btn.classList.add('active');({inicio:renderHome,venda:()=>{renderCart();buildCRMSelect();renderSalesTable();},estoque:renderStock,cobrancas:renderCobrancas,trocas:renderReturns,indicacoes:renderReferrals,compras:renderCompras,conferencia:renderConferencia,despesas:renderExpenses,crm:renderCRM,fornecedores:renderSuppliers,estrategias:renderEstrategias})[t]();}
 function goTab(t){const btn=[...document.querySelectorAll('.tab')].find(b=>(b.getAttribute('onclick')||'').includes("gt('"+t+"'"));gt(t,btn||null);}
 
 // ─── HOME ─────────────────────────────────────────────────────
@@ -2100,6 +2172,76 @@ function updCost(id,t,v){if(t==='cost')DB.costs[id]=parseFloat(v)||0;else DB.fre
 function updCol(id,v){const p=ALL.find(x=>x.id===id);if(p)p.col=v;if(!DB.cols)DB.cols={};DB.cols[id]=v;scheduleSave();}
 function openRestockModal(pid){const p=getP(pid);const m=document.createElement('div');m.className='modal-bg';m.id='restock-modal';m.innerHTML=`<div class="modal"><div class="modal-t">Repor: ${sh(p?p.n:'?',26)}<button class="close-btn" onclick="closeModal()">×</button></div><div class="fr"><div class="fl"><label>Quantidade*</label><input id="rs-qty" type="number" min="1" value="1"></div><div class="fl"><label>Valor pago R$</label><input id="rs-val" type="number" step="0.01" placeholder="0,00"></div></div><div class="fr fr1"><div class="fl"><label>Observação</label><input id="rs-obs" type="text" placeholder="ex: Pedido La Mell"></div></div><button class="btn full" onclick="saveRestock(${pid})">✓ Confirmar</button></div>`;document.getElementById('modal-root').appendChild(m);}
 function saveRestock(pid){const qty=parseInt(document.getElementById('rs-qty').value)||0;if(qty<=0){alert('Informe a quantidade');return;}DB.stock[pid]=(DB.stock[pid]||0)+qty;DB.restock.push({id:Date.now(),pid,qty,value:parseFloat(document.getElementById('rs-val').value)||0,obs:document.getElementById('rs-obs').value.trim(),date:new Date().toISOString()});scheduleSave();closeModal();renderStock();}
+
+function productOptions(selected){
+  return `<option value="">— selecionar —</option>`+ALL.map(p=>`<option value="${p.id}"${String(selected||'')===String(p.id)?' selected':''}>${sh(p.n,36)} · ${p.s} · ${p.c}</option>`).join('');
+}
+function renderReturnFormHint(){
+  const el=document.getElementById('ret-hint');if(!el)return;
+  const t=document.getElementById('ret-type')?.value||'Troca simples';
+  const msg={
+    'Troca simples':'Use quando entrou uma peça e saiu outra do mesmo valor. O caixa fica igual.',
+    'Troca com diferença':'Use quando a cliente pagou diferença ou você devolveu/criou crédito.',
+    'Devolução':'Use quando saiu dinheiro do banco ou a venda virou cancelamento.',
+    'Crédito para próxima compra':'Use quando você não devolveu dinheiro agora, mas deixou valor em aberto para a cliente.'
+  }[t]||'';
+  el.innerHTML=`<span style="color:var(--text2)">${msg}</span>`;
+}
+function returnImpact(r){return (Number(r.diffIn)||0)-(Number(r.refund)||0);}
+function renderReturns(){
+  if(!Array.isArray(DB.returns))DB.returns=[];
+  const oldSel=document.getElementById('ret-old-prod'),newSel=document.getElementById('ret-new-prod');
+  if(oldSel&&!oldSel.dataset.ready){oldSel.innerHTML=productOptions('');oldSel.dataset.ready='1';}
+  if(newSel&&!newSel.dataset.ready){newSel.innerHTML=productOptions('');newSel.dataset.ready='1';}
+  renderReturnFormHint();
+  const total=DB.returns.length,resolved=DB.returns.filter(r=>r.status==='Resolvido').length,pending=DB.returns.filter(r=>r.status==='Pendente').length;
+  const impact=DB.returns.reduce((s,r)=>s+returnImpact(r),0);
+  document.getElementById('return-metrics').innerHTML=`<div class="metric purple"><div class="ml">Trocas/devoluções</div><div class="mv">${total}</div><div class="ms">${resolved} resolvidas · ${pending} pendentes</div></div><div class="metric ${impact>=0?'green':'red'}"><div class="ml">Impacto separado</div><div class="mv">${fmt(impact)}</div><div class="ms">não aplicado no caixa atual</div></div><div class="metric amber"><div class="ml">Créditos/devoluções</div><div class="mv">${fmt(DB.returns.reduce((s,r)=>s+(Number(r.refund)||0),0))}</div><div class="ms">para acompanhar manualmente</div></div>`;
+  document.getElementById('return-tbody').innerHTML=DB.returns.length?[...DB.returns].reverse().map(r=>{
+    const oldP=getP(r.oldPid),newP=getP(r.newPid),impact=returnImpact(r);
+    return `<tr><td style="color:var(--text3);font-family:var(--mono)">${fmtD(r.date)}</td><td>${escText(r.client||'—')}</td><td><span class="badge bg-v">${escText(r.type)}</span></td><td>${oldP?sh(oldP.n,22):'—'}</td><td>${newP?sh(newP.n,22):'—'}</td><td style="font-family:var(--mono);font-weight:500;color:${impact>=0?'var(--green)':'var(--red)'}">${fmt(impact)}</td><td><span class="badge ${r.status==='Resolvido'?'bg-g':'bg-a'}">${r.status}</span></td><td><button class="btn-del" onclick="delReturn(${r.id})">✕</button></td></tr>`;
+  }).join(''):`<tr><td colspan="8" class="empty">Nenhuma troca ou devolução registrada</td></tr>`;
+}
+function addReturn(){
+  const client=document.getElementById('ret-client').value.trim();
+  const type=document.getElementById('ret-type').value;
+  const oldPid=document.getElementById('ret-old-prod').value||'';
+  const newPid=document.getElementById('ret-new-prod').value||'';
+  const original=parseFloat(document.getElementById('ret-original').value)||0;
+  const diffIn=parseFloat(document.getElementById('ret-diff-in').value)||0;
+  const refund=parseFloat(document.getElementById('ret-refund').value)||0;
+  const status=document.getElementById('ret-status').value;
+  const obs=document.getElementById('ret-obs').value.trim();
+  if(!client){alert('Informe a cliente');return;}
+  DB.returns.push({id:Date.now(),date:new Date().toISOString(),client,type,oldPid,newPid,original,diffIn,refund,status,obs});
+  scheduleSave();
+  ['ret-client','ret-original','ret-diff-in','ret-refund','ret-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('ret-old-prod').value='';document.getElementById('ret-new-prod').value='';
+  renderReturns();
+}
+function delReturn(id){if(!confirm('Excluir este registro?'))return;DB.returns=DB.returns.filter(r=>r.id!==id);scheduleSave();renderReturns();}
+
+function renderReferrals(){
+  if(!Array.isArray(DB.referrals))DB.referrals=[];
+  const total=DB.referrals.length,converted=DB.referrals.filter(r=>r.status==='Comprou').length;
+  const generated=DB.referrals.filter(r=>r.status==='Comprou').reduce((s,r)=>s+(Number(r.value)||0),0);
+  const rewards=DB.referrals.reduce((s,r)=>s+(Number(r.reward)||0),0);
+  document.getElementById('ref-metrics').innerHTML=`<div class="metric purple"><div class="ml">Indicações</div><div class="mv">${total}</div><div class="ms">${converted} viraram compra</div></div><div class="metric green"><div class="ml">Receita por indicação</div><div class="mv">${fmt(generated)}</div><div class="ms">controle separado</div></div><div class="metric amber"><div class="ml">Créditos prometidos</div><div class="mv">${fmt(rewards)}</div><div class="ms">para premiar cliente boa</div></div>`;
+  const byFrom={};DB.referrals.forEach(r=>{const k=r.from||'—';if(!byFrom[k])byFrom[k]={count:0,bought:0,value:0,reward:0};byFrom[k].count++;if(r.status==='Comprou')byFrom[k].bought++;byFrom[k].value+=Number(r.value)||0;byFrom[k].reward+=Number(r.reward)||0;});
+  document.getElementById('ref-champions').innerHTML=Object.entries(byFrom).sort((a,b)=>b[1].bought-a[1].bought||b[1].count-a[1].count).slice(0,6).map(([name,d])=>`<div class="bar-r"><div class="bar-l"><span style="font-size:12px;color:var(--text);font-weight:500">${escText(name)}</span><small style="display:block;color:var(--text3)">${d.count} indicações · ${d.bought} compras</small></div><div class="bar-v" style="font-family:var(--mono);color:var(--green)">${fmt(d.value)}</div></div>`).join('')||`<div class="empty">Nenhuma indicação ainda</div>`;
+  document.getElementById('ref-tbody').innerHTML=DB.referrals.length?[...DB.referrals].reverse().map(r=>`<tr><td style="color:var(--text3);font-family:var(--mono)">${fmtD(r.date)}</td><td>${escText(r.from||'—')}</td><td>${escText(r.to||'—')}</td><td><span class="badge ${r.status==='Comprou'?'bg-g':r.status==='Não respondeu'?'bg-r':'bg-a'}">${escText(r.status)}</span></td><td style="font-family:var(--mono);color:var(--green)">${fmt(r.value||0)}</td><td style="font-family:var(--mono);color:var(--amber)">${fmt(r.reward||0)}</td><td><button class="btn-del" onclick="delReferral(${r.id})">✕</button></td></tr>`).join(''):`<tr><td colspan="7" class="empty">Nenhuma indicação registrada</td></tr>`;
+}
+function addReferral(){
+  const from=document.getElementById('ref-from').value.trim();
+  const to=document.getElementById('ref-to').value.trim();
+  if(!from||!to){alert('Informe quem indicou e quem foi indicada');return;}
+  DB.referrals.push({id:Date.now(),date:new Date().toISOString(),from,to,status:document.getElementById('ref-status').value,value:parseFloat(document.getElementById('ref-value').value)||0,reward:parseFloat(document.getElementById('ref-reward').value)||0,channel:document.getElementById('ref-channel').value,obs:document.getElementById('ref-obs').value.trim()});
+  scheduleSave();
+  ['ref-from','ref-to','ref-value','ref-reward','ref-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderReferrals();
+}
+function delReferral(id){if(!confirm('Excluir esta indicação?'))return;DB.referrals=DB.referrals.filter(r=>r.id!==id);scheduleSave();renderReferrals();}
+
 function renderExpenses(){const total=DB.expenses.reduce((s,e)=>s+e.value,0);const now=new Date();const mTotal=DB.expenses.filter(e=>{const d=new Date(e.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce((s,e)=>s+e.value,0);const bycat={};DB.expenses.forEach(e=>{bycat[e.cat]=(bycat[e.cat]||0)+e.value;});const top=Object.entries(bycat).sort((a,b)=>b[1]-a[1])[0];document.getElementById('exp-metrics').innerHTML=`<div class="metric red"><div class="ml">Saídas registradas</div><div class="mv">${fmt(total)}</div><div class="ms">${DB.expenses.length} lançamentos · inclui reinvestimento</div></div><div class="metric amber"><div class="ml">Saídas este mês</div><div class="mv">${fmt(mTotal)}</div></div><div class="metric purple"><div class="ml">Maior saída</div><div class="mv" style="font-size:14px">${top?top[0]:'—'}</div></div>`;const maxE=Math.max(...Object.values(bycat),1);document.getElementById('exp-by-cat').innerHTML=Object.entries(bycat).sort((a,b)=>b[1]-a[1]).map(([c,v],i)=>`<div class="bar-r"><div class="bar-l"><span class="badge ${EXP_C[c]||'bg-r'}">${c}</span></div><div class="bar-t"><div class="bar-f" style="width:${Math.round((v/maxE)*100)}%;background:${BARS[i%BARS.length]}"></div></div><div class="bar-v" style="color:var(--red);font-family:var(--mono)">${fmt(v)}</div></div>`).join('')||`<div class="empty">Nenhuma saída</div>`;document.getElementById('exp-tbody').innerHTML=[...DB.expenses].reverse().map(e=>`<tr><td style="color:var(--text3);font-family:var(--mono)">${fmtD(e.date)}</td><td>${e.desc}</td><td><span class="badge ${EXP_C[e.cat]||'bg-r'}">${e.cat}</span></td><td style="font-weight:500;color:var(--red);font-family:var(--mono)">${fmt(e.value)}</td><td><button class="btn-del" onclick="delExp(${e.id})">✕</button></td></tr>`).join('')||`<tr><td colspan="5" class="empty">Nenhuma saída</td></tr>`;}
 function addExpense(){const desc=document.getElementById('exp-desc').value.trim();const val=parseFloat(document.getElementById('exp-val').value)||0;if(!desc||!val){alert('Informe descrição e valor');return;}DB.expenses.push({id:Date.now(),desc,value:val,cat:document.getElementById('exp-cat').value,obs:(document.getElementById('exp-obs-f')||{value:''}).value.trim(),date:new Date().toISOString()});scheduleSave();document.getElementById('exp-desc').value='';document.getElementById('exp-val').value='';renderExpenses();}
 function delExp(id){if(!confirm('Excluir?'))return;DB.expenses=DB.expenses.filter(e=>e.id!==id);scheduleSave();renderExpenses();}
