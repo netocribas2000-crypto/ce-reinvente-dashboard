@@ -1170,9 +1170,10 @@ function downloadBackup(){const now=new Date().toISOString().slice(0,19).replace
 function normalizeDataLabels(){let changed=false;DB.expenses.forEach(e=>{if((e.cat||'').includes('Reposi')){if(e.cat!=='Reposicao'){e.cat='Reposicao';changed=true;}if((e.desc||'').includes('Reposi')){e.desc='Reposicao La Mell';changed=true;}}});if(changed)scheduleSave();}
 function renderCobrancas(){
   const pend=DB.sales.filter(s=>s.pending).sort((a,b)=>(b.total||0)-(a.total||0));
-  const total=pend.reduce((s,v)=>s+v.total,0);
+  const saldoVenda=v=>v.total-getParcial(v.id);
+  const total=pend.reduce((s,v)=>s+saldoVenda(v),0);
   const clients={};
-  pend.forEach(v=>{const k=v.client||'?';if(!clients[k])clients[k]={total:0,count:0,items:[],sales:[],oldest:v.date};clients[k].total+=v.total;clients[k].count++;clients[k].items.push(itemLabel(v,40));clients[k].sales.push(v);if(v.date&&v.date<clients[k].oldest)clients[k].oldest=v.date;});
+  pend.forEach(v=>{const k=v.client||'?';const saldo=saldoVenda(v);if(!clients[k])clients[k]={total:0,count:0,items:[],sales:[],oldest:v.date};clients[k].total+=saldo;clients[k].count++;clients[k].items.push(itemLabel(v,40));clients[k].sales.push(v);if(v.date&&v.date<clients[k].oldest)clients[k].oldest=v.date;});
   const clientList=Object.entries(clients).sort((a,b)=>b[1].total-a[1].total);
   const maxVal=clientList[0]?clientList[0][1].total:1;
   const AVATARBG=['linear-gradient(135deg,#d470aa,#8060d8)','linear-gradient(135deg,#e08030,#d47000)','linear-gradient(135deg,#5080e8,#3060c8)','linear-gradient(135deg,#50c878,#30a858)','linear-gradient(135deg,#30c0a8,#208088)'];
