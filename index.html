@@ -714,6 +714,27 @@ const LAMELL=[
   {id:347,n:"Tshirt Cruz (DTF)",c:"—",s:"U",p:49.90,cost:19.49,freight:0,supplier:'original',col:'religiosas'},
   {id:348,n:"Tshirt Monstros S.A (DTF)",c:"—",s:"U",p:49.90,cost:19.49,freight:0,supplier:'original',col:'personagens'},
   {id:349,n:"Tshirt Jerry (DTF)",c:"—",s:"U",p:49.90,cost:21.49,freight:0,supplier:'original',col:'personagens'},
+  {id:351,n:"Tshirt Tom And Jerry",c:"Azul Royal",s:"M",p:59.90,cost:18.97,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:352,n:"Tshirt Bolsinho Snoopy Deitado",c:"Vermelho Mandarim",s:"G",p:59.90,cost:21.34,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:353,n:"Tshirt Mini Angel",c:"Off White",s:"M",p:59.90,cost:18.97,freight:LF,supplier:'lamell',col:'religiosas'},
+  {id:354,n:"Tshirt Bolsinho Winnie The Pooh",c:"Marrom Ebony",s:"M",p:59.90,cost:21.34,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:355,n:"Max Tshirt The Originals Snoopys",c:"Rosa Master Pink",s:"G",p:59.90,cost:26.88,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:356,n:"Tshirt The Original Snoopys Bakery And Cafe",c:"Stone Green",s:"G",p:59.90,cost:18.97,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:357,n:"Tshirt Nossa Senhora",c:"Preto",s:"P",p:59.90,cost:18.97,freight:LF,supplier:'lamell',col:'religiosas'},
+  {id:358,n:"Tshirt Nossa Senhora",c:"Preto",s:"G",p:59.90,cost:18.97,freight:LF,supplier:'lamell',col:'religiosas'},
+  {id:359,n:"Tshirt Tom And Jerry",c:"Marrom Enigmatic",s:"P",p:59.90,cost:18.97,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:360,n:"Tshirt Patollino E Perna Longa Looney Tunes",c:"Verde Selva",s:"GG",p:59.90,cost:20.87,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:361,n:"Tshirt Lisa Little Miss Perfect",c:"Azul Lavanda",s:"M",p:59.90,cost:23.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:362,n:"Tshirt Infantil Minecraft",c:"Verde Esmeralda",s:"2",p:59.90,cost:22.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:363,n:"Tshirt Flores Deus É A Base De Tudo",c:"Areia Queimada",s:"M",p:59.90,cost:23.98,freight:LF,supplier:'lamell',col:'religiosas'},
+  {id:364,n:"Tshirt Flores Deus É A Base De Tudo",c:"Areia Queimada",s:"G",p:59.90,cost:23.98,freight:LF,supplier:'lamell',col:'religiosas'},
+  {id:365,n:"Tshirt Personagens Disney Gola",c:"Off White",s:"G",p:59.90,cost:23.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:366,n:"Tshirt Três Hello Kittys",c:"Vermelho Fruta Doce",s:"M",p:59.90,cost:23.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:367,n:"Tshirt Senhora Cabeça De Batata",c:"Azul Acqua",s:"G",p:59.90,cost:26.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:368,n:"Tshirt Quadrinhos Powerpuff Girls",c:"Roxo",s:"G",p:59.90,cost:23.98,freight:LF,supplier:'lamell',col:'personagens'},
+  {id:369,n:"Tshirt Jesus",c:"Stone Green",s:"G1",p:59.90,cost:29.98,freight:LF,supplier:'lamell',col:'religiosas'},
+  {id:370,n:"Tshirt Jesus Te Ama",c:"Verde Selva",s:"GG",p:59.90,cost:26.38,freight:LF,supplier:'lamell',col:'religiosas'},
+  {id:371,n:"Tshirt Fé Coraçãozinho",c:"Preto",s:"GG",p:59.90,cost:26.38,freight:LF,supplier:'lamell',col:'religiosas'},
 ];
 const ALL=[...ORIG,...NOSSA,...BMODA,...LAMELL];
 const SUP_C={nossa:'bg-a',bmoda:'bg-v',lamell:'bg-p',original:'bg-b'};
@@ -802,7 +823,13 @@ async function loadData(){initTheme();
       333:'assets/stock/333.jpg',334:'assets/stock/334.jpg',335:'assets/stock/335.jpg',336:'assets/stock/336.jpg',
       337:'assets/stock/337.jpg',339:'assets/stock/339.jpg',340:'assets/stock/340.jpg',341:'assets/stock/341.jpg',
       342:'assets/stock/342.jpg',343:'assets/stock/343.jpg',344:'assets/stock/344.jpg',345:'assets/stock/345.jpg',
-      346:'assets/stock/346.jpg'
+      346:'assets/stock/346.jpg',
+      332:'assets/stock/332.jpg',351:'assets/stock/351.jpg',352:'assets/stock/352.jpg',353:'assets/stock/353.jpg',
+      354:'assets/stock/354.jpg',355:'assets/stock/355.jpg',356:'assets/stock/356.jpg',357:'assets/stock/357.jpg',
+      358:'assets/stock/358.jpg',359:'assets/stock/359.jpg',360:'assets/stock/360.jpg',361:'assets/stock/361.jpg',
+      362:'assets/stock/362.jpg',363:'assets/stock/363.jpg',364:'assets/stock/364.jpg',365:'assets/stock/365.jpg',
+      366:'assets/stock/366.jpg',367:'assets/stock/367.jpg',368:'assets/stock/368.jpg',369:'assets/stock/369.jpg',
+      370:'assets/stock/370.jpg',371:'assets/stock/371.jpg'
     });
     Object.entries(_F).forEach(([id,b64])=>{if(!DB.photos[id])DB.photos[id]=b64;});
     // Embedded demo CRM/expense/sale seed disabled to prevent duplicate or stale records.
