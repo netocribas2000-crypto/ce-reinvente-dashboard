@@ -429,7 +429,7 @@ tr:hover td{background:var(--bg3)}
       <input class="sb" style="margin:0;width:160px;height:34px" placeholder="🔍 Buscar..." id="search-stock" oninput="renderStock()">
       <select id="stock-filter" onchange="renderStock()" style="font-size:12px;padding:4px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--bg);color:var(--text);height:34px;font-family:var(--mono)">
         <option value="">Todos</option><option value="zero">Zerados</option><option value="low">Baixo estoque</option><option value="ok">Em estoque</option>
-        <option value="nossa">Nossa T-shirt</option><option value="bmoda">B Moda</option><option value="lamell">La Mell</option><option value="original">Originais</option>
+        <option value="nossa">Nossa T-shirt</option><option value="bmoda">B Moda</option><option value="lamell">La Mell</option><option value="tata">Tata Closet</option><option value="original">Originais</option>
         <optgroup label="── Coleções ──">
         <option value="col-personagens">👾 Personagens</option>
         <option value="col-religiosa">✝️ Religiosas</option>
@@ -638,7 +638,7 @@ const ORIG=[
   {id:22,n:"Brooklyn Oversize Azul",c:"Azul",s:"G",p:64.90,cost:24.99,supplier:'original',col:'urbana'},
   {id:372,n:"Tshirt Bolsinho Woody Buzz",c:"Bege",s:"P",p:59.90,cost:26.98,supplier:'original',col:'personagens'},
 ];
-const NF=3.49,LF=1.67;
+const NF=3.49,LF=1.67,TF=5.78;
 const NOSSA=[
   {id:101,n:"Tshirt Digno (DTF)",c:"Preto",s:"U",p:49.90,cost:18.00,freight:NF,supplier:'nossa',col:'religiosa'},
   {id:102,n:"Tshirt Tudo Vem No Tempo Certo",c:"Lilás",s:"U",p:49.90,cost:18.00,freight:NF,supplier:'nossa',col:'religiosa'},
@@ -771,9 +771,21 @@ const LAMELL=[
   {id:405,n:"Tshirt Bolsinho Stitch",c:"Roxo Galaxy",s:"M",p:59.90,cost:26.98,freight:LF,supplier:'lamell',col:'personagens'},
   {id:406,n:"Tshirt Corações Mangas Aplicação",c:"Preto",s:"GG",p:59.90,cost:29.68,freight:LF,supplier:'lamell',col:'basicas'},
 ];
-const ALL=[...ORIG,...NOSSA,...BMODA,...LAMELL];
-const SUP_C={nossa:'bg-a',bmoda:'bg-v',lamell:'bg-p',original:'bg-b'};
-const SUP_L={nossa:'Nossa T-shirt',bmoda:'B Moda',lamell:'La Mell',original:'Original'};
+const TATA=[
+  {id:407,n:"Tshirt Lindinha Super Poderosas",c:"Azul Claro",s:"GG",p:59.90,cost:17.99,freight:TF,supplier:'tata',col:'personagens'},
+  {id:408,n:"Tshirt Tom E Jerry",c:"Azul Claro",s:"G",p:59.90,cost:17.99,freight:TF,supplier:'tata',col:'personagens'},
+  {id:409,n:"Tshirt Levi's",c:"Azul Marinho",s:"GG",p:59.90,cost:17.99,freight:TF,supplier:'tata',col:'urbana'},
+  {id:410,n:"Tshirt Borboletas",c:"Chumbo",s:"M",p:59.90,cost:17.99,freight:TF,supplier:'tata',col:'natureza'},
+  {id:411,n:"Tshirt Lisa",c:"Marrom",s:"G",p:59.90,cost:17.99,freight:TF,supplier:'tata',col:'basica'},
+  {id:412,n:"Tshirt Lisa",c:"Verde Floresta",s:"GG",p:59.90,cost:17.99,freight:TF,supplier:'tata',col:'basica'},
+  {id:413,n:"Tshirt Jesus",c:"Marrom",s:"G",p:59.90,cost:17.99,freight:TF,supplier:'tata',col:'religiosa'},
+  {id:414,n:"Tshirt Minnie",c:"Rosa Pink",s:"M",p:59.90,cost:17.99,freight:TF,supplier:'tata',col:'personagens'},
+  {id:415,n:"Tshirt Não Tenha Medo Tenha Fé",c:"Rosa Pink",s:"M",p:59.90,cost:17.99,freight:TF,supplier:'tata',col:'religiosa'},
+  {id:416,n:"Tshirt Todavia Me Alegrarei",c:"Terra Cota",s:"M",p:59.90,cost:17.99,freight:TF,supplier:'tata',col:'religiosa'},
+];
+const ALL=[...ORIG,...NOSSA,...BMODA,...LAMELL,...TATA];
+const SUP_C={nossa:'bg-a',bmoda:'bg-v',lamell:'bg-p',tata:'bg-g',original:'bg-b'};
+const SUP_L={nossa:'Nossa T-shirt',bmoda:'B Moda',lamell:'La Mell',tata:'Tata Closet',original:'Original'};
 const STAGES=['Lead','Interessado','Cliente ativo','Fiel','Inativo'];
 const STAGE_C={Lead:'bg-b',Interessado:'bg-a',['Cliente ativo']:'bg-g',Fiel:'bg-v',Inativo:'bg-r'};
 const AVC=['#b85590','#185FA5','#2a8a50','#8a5f10','#5040a8','#0a6050','#902020'];
@@ -837,7 +849,7 @@ async function loadData(){initTheme();
     if(DB.freights[p.id]===undefined)DB.freights[p.id]=p.freight||0;
     if(DB.cols&&DB.cols[p.id])p.col=DB.cols[p.id];
   });
-  ['Nossa T-shirt','LaMell','B Modas'].forEach(sn=>{if(!DB.suppliers.find(s=>s.name===sn)){const map={'Nossa T-shirt':{category:'Atacado',phone:'',site:'nossastshirt.com.br',orders:[{id:Date.now()+Math.random(),desc:'Pedido 12 peças',value:239.88,status:'Aguardando',date:new Date().toISOString()}]},'LaMell':{category:'Atacado',phone:'62 99139-8959',site:'lamell.com.br',orders:[{id:Date.now()+Math.random(),desc:'Pedido T26053978 — 13 peças',value:366.92,status:'Aguardando',date:new Date().toISOString()}]},'B Modas':{category:'Atacado',phone:'',site:'bmoda.com.br',orders:[{id:Date.now()+Math.random(),desc:'Pedido #37356 — 9 peças',value:185.91,status:'Aguardando',date:new Date().toISOString()}]}};DB.suppliers.push({id:Date.now()+Math.random()*999,name:sn,...(map[sn]||{category:'Atacado',orders:[]})});}});
+  ['Nossa T-shirt','LaMell','B Modas','Tata Closet'].forEach(sn=>{if(!DB.suppliers.find(s=>s.name===sn)){const map={'Nossa T-shirt':{category:'Atacado',phone:'',site:'nossastshirt.com.br',orders:[{id:Date.now()+Math.random(),desc:'Pedido 12 peças',value:239.88,status:'Aguardando',date:new Date().toISOString()}]},'LaMell':{category:'Atacado',phone:'62 99139-8959',site:'lamell.com.br',orders:[{id:Date.now()+Math.random(),desc:'Pedido T26053978 — 13 peças',value:366.92,status:'Aguardando',date:new Date().toISOString()}]},'B Modas':{category:'Atacado',phone:'',site:'bmoda.com.br',orders:[{id:Date.now()+Math.random(),desc:'Pedido #37356 — 9 peças',value:185.91,status:'Aguardando',date:new Date().toISOString()}]},'Tata Closet':{category:'Atacado',phone:'62 99132-5421',site:'tatacloset.com.br',orders:[{id:Date.now()+Math.random(),desc:'Pedido #6550690 — 10 peças',value:237.69,status:'Aguardando',date:new Date().toISOString()}]}};DB.suppliers.push({id:Date.now()+Math.random()*999,name:sn,...(map[sn]||{category:'Atacado',orders:[]})});}});
   // Seed sales disabled: preserve the data loaded from Google Sheets/local storage.
   DB['auto_sales_v1_done']=true;
   // Estoque inicial produtos novos La Mell (pedidos jun/2026)
@@ -1056,7 +1068,10 @@ function applyPendingOrders(){
   if(!DB.meta.partialPayments)DB.meta.partialPayments=[];
   const ORDERS=[
     {id:'lamell_20260620',date:'2026-06-20',desc:'Reposição La Mell',value:377.05,
-     items:[333,334,335,336,337,338,339,340,341,342,343,344,345,346]}
+     items:[333,334,335,336,337,338,339,340,341,342,343,344,345,346]},
+    // Estoque das 10 peças vem do seed automático (1 un cada) — items vazio evita dobrar.
+    {id:'tata_20260827',date:'2026-08-27',desc:'Pedido #6550690 Tata Closet — 10 peças',value:237.69,
+     items:[]}
   ];
   const NEW_CLIENTS=[
     {migId:'client_marli_init',id:1782000000099,name:'Marli',phone:'',stage:'Cliente ativo',totalSpent:0,purchases:0,lastPurchase:null,obs:''},
@@ -1487,7 +1502,7 @@ function _renderBuyList(){
   const wasActive=p=>soldPids.has(p.id)||(DB.costs[p.id]>0)||!!getPhoto(p.id);
   const all=ALL.filter(wasActive).map(p=>{const qty=DB.stock[p.id]||0,c=DB.costs[p.id]||0,fr=DB.freights[p.id]||0;return{p,qty,cost:c+fr,margin:p.p-c-fr};});
   const rows=all.filter(r=>_buyFilter==='zero'?r.qty===0:_buyFilter==='low'?r.qty===1:r.qty<=1).sort((a,b)=>a.qty-b.qty||b.margin-a.margin);
-  const SUP_COL_MAP={nossa:'var(--pink)',bmoda:'var(--blue)',lamell:'var(--purple)',original:'var(--teal)'};
+  const SUP_COL_MAP={nossa:'var(--pink)',bmoda:'var(--blue)',lamell:'var(--purple)',tata:'var(--green)',original:'var(--teal)'};
   document.getElementById('buy-list').innerHTML=rows.length?`<div class="buy-grid">${rows.map(r=>{
     const mg=r.p.p>0?Math.round((r.margin/r.p.p)*100):0;
     const mgCol=mg>=40?'var(--green)':mg>=20?'var(--amber)':'var(--red)';
@@ -1518,7 +1533,7 @@ function _renderBuyList(){
 function startPurchase(pid){const p=getP(pid);if(!p)return;goTab('fornecedores');setTimeout(()=>{const q=document.getElementById('search-sup');if(q){q.value=SUP_L[p.supplier]||p.supplier;renderSuppliers();}alert(`Compra sugerida: ${p.n}\nFornecedor: ${SUP_L[p.supplier]||p.supplier}\nCusto estimado: ${fmt((DB.costs[p.id]||0)+(DB.freights[p.id]||0))}`);},80);}
 const COL_LABEL_MAP={personagens:'👾 Personagens',religiosa:'✝️ Religiosas',religiosas:'✝️ Religiosas',basica:'⚫ Básicas',basicas:'⚫ Básicas',natureza:'🌸 Natureza',brasil:'🇧🇷 Brasil',urbana:'🏙️ Urbana',academia:'💪 Academia'};
 const COL_CLR_MAP={personagens:'var(--purple)',religiosa:'var(--teal)',religiosas:'var(--teal)',basica:'var(--text2)',basicas:'var(--text2)',natureza:'var(--pink)',brasil:'var(--green)',urbana:'var(--blue)',academia:'var(--amber)'};
-const SUP_LEAD_DAYS={lamell:20,nossa:7,bmoda:7,original:3};
+const SUP_LEAD_DAYS={lamell:20,nossa:7,bmoda:7,tata:20,original:3};
 function getLeadDays(p){return SUP_LEAD_DAYS[p.supplier]||14;}
 function _buildVelocityData(){
   const allS=DB.sales;if(!allS.length)return null;
@@ -2354,7 +2369,7 @@ let stockView='grid';
 function setView(v){stockView=v;document.getElementById('view-grid').style.background=v==='grid'?'var(--pinkbg)':'transparent';document.getElementById('view-grid').style.color=v==='grid'?'var(--pink)':'var(--text2)';document.getElementById('view-list').style.background=v==='list'?'var(--pinkbg)':'transparent';document.getElementById('view-list').style.color=v==='list'?'var(--pink)':'var(--text2)';renderStock();}
 function getPhoto(id){return DB.photos&&DB.photos[id]||null;}
 function triggerPhotoUpload(id){const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{const img=new Image();img.onload=()=>{const MAX=500;let w=img.width,h=img.height;if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);const compressed=canvas.toDataURL('image/jpeg',0.75);if(!DB.photos)DB.photos={};DB.photos[id]=compressed;scheduleSave();renderStock();};img.src=ev.target.result;};reader.readAsDataURL(file);};inp.click();}
-function renderStock(){const f=document.getElementById('stock-filter')?.value||'';const q=(document.getElementById('search-stock')||{value:''}).value.toLowerCase();const alerts=ALL.filter(p=>(DB.stock[p.id]||0)===0);const totalStk=ALL.reduce((s,p)=>s+(DB.stock[p.id]||0),0);const badge=document.getElementById('stock-total-badge');if(badge)badge.textContent=totalStk+' peças';document.getElementById('stock-alerts').innerHTML=alerts.length?`<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">${alerts.slice(0,8).map(p=>`<span class="alert-badge">⚠ ${sh(p.n,18)}</span>`).join('')}${alerts.length>8?`<span class="alert-badge">+${alerts.length-8}</span>`:''}</div>`:'';const filtered=ALL.filter(p=>{const qty=DB.stock[p.id]||0;if(q&&!p.n.toLowerCase().includes(q))return false;if(f==='zero')return qty===0;if(f==='low')return qty>0&&qty<=2;if(f==='ok')return qty>2;if(['nossa','bmoda','lamell','original'].includes(f))return p.supplier===f;
+function renderStock(){const f=document.getElementById('stock-filter')?.value||'';const q=(document.getElementById('search-stock')||{value:''}).value.toLowerCase();const alerts=ALL.filter(p=>(DB.stock[p.id]||0)===0);const totalStk=ALL.reduce((s,p)=>s+(DB.stock[p.id]||0),0);const badge=document.getElementById('stock-total-badge');if(badge)badge.textContent=totalStk+' peças';document.getElementById('stock-alerts').innerHTML=alerts.length?`<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">${alerts.slice(0,8).map(p=>`<span class="alert-badge">⚠ ${sh(p.n,18)}</span>`).join('')}${alerts.length>8?`<span class="alert-badge">+${alerts.length-8}</span>`:''}</div>`:'';const filtered=ALL.filter(p=>{const qty=DB.stock[p.id]||0;if(q&&!p.n.toLowerCase().includes(q))return false;if(f==='zero')return qty===0;if(f==='low')return qty>0&&qty<=2;if(f==='ok')return qty>2;if(['nossa','bmoda','lamell','tata','original'].includes(f))return p.supplier===f;
     if(f.startsWith('col-'))return p.col===(f.replace('col-',''));return true;});
 if(stockView==='grid'){
   document.getElementById('stock-grid').className='catalog-grid';
