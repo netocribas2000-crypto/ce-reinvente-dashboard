@@ -1793,10 +1793,15 @@ function intelDRE(el){
   const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   function calcMonth(y,m){
     const sales=DB.sales.filter(s=>{const d=new Date(s.date);return!s.pending&&d.getFullYear()===y&&d.getMonth()===m;});
-    const receitaBruta=sales.reduce((s,v)=>s+(v.total+(v.discount||0)),0);
+    const costOf=v=>(v.items||[{pid:v.productId,qty:1,costUnit:v.costUnit||0,freightUnit:v.freightUnit||0}]).reduce((a,i)=>a+(((i.costUnit||0)+(i.freightUnit||0))*(i.qty||1)),0);
+    // Vendas ainda pendentes com recebimento parcial entram pelo valor já recebido (custo proporcional)
+    const parciais=DB.sales.filter(s=>{const d=new Date(s.date);return s.pending&&d.getFullYear()===y&&d.getMonth()===m&&getParcial(s.id)>0&&s.total>0;}).map(s=>({s,pago:Math.min(getParcial(s.id),s.total)}));
+    const recParcial=parciais.reduce((a,x)=>a+x.pago,0);
+    const cmvParcial=parciais.reduce((a,x)=>a+costOf(x.s)*(x.pago/x.s.total),0);
+    const receitaBruta=sales.reduce((s,v)=>s+(v.total+(v.discount||0)),0)+recParcial;
     const descontos=sales.reduce((s,v)=>s+(v.discount||0),0);
     const receita=receitaBruta-descontos;
-    const cmv=sales.reduce((s,v)=>s+(v.items||[{pid:v.productId,qty:1,costUnit:v.costUnit||0,freightUnit:v.freightUnit||0}]).reduce((a,i)=>a+(((i.costUnit||0)+(i.freightUnit||0))*(i.qty||1)),0),0);
+    const cmv=sales.reduce((s,v)=>s+costOf(v),0)+cmvParcial;
     const allDesp=DB.expenses.filter(e=>{const d=new Date(e.date);return d.getFullYear()===y&&d.getMonth()===m;});
     const despesas=allDesp.filter(e=>!(e.cat||'').toLowerCase().includes('reposi'));
     const reposicao=allDesp.filter(e=>(e.cat||'').toLowerCase().includes('reposi'));
@@ -1805,7 +1810,7 @@ function intelDRE(el){
     const lucroBruto=receita-cmv;
     const lucroOp=lucroBruto-totalDesp;
     const fluxo=receita-totalDesp-totalRepos;
-    return{receitaBruta,descontos,receita,cmv,lucroBruto,totalDesp,lucroOp,totalRepos,fluxo,sales:sales.length,despesas,reposicao};
+    return{receitaBruta,descontos,receita,cmv,lucroBruto,totalDesp,lucroOp,totalRepos,fluxo,sales:sales.length,parciais:parciais.length,despesas,reposicao};
   }
   const cur=calcMonth(_dreYear,_dreMonth);
   const prevM=_dreMonth===0?11:_dreMonth-1,prevY=_dreMonth===0?_dreYear-1:_dreYear;
@@ -1824,7 +1829,7 @@ function intelDRE(el){
       <button onclick="_dreNav(-1)" style="background:var(--bg3);border:none;border-radius:8px;padding:6px 14px;cursor:pointer;color:var(--text2);font-size:16px">‹</button>
       <div style="text-align:center">
         <div style="font-size:1.1rem;font-weight:700;color:var(--text)">${MONTHS[_dreMonth]} ${_dreYear}</div>
-        <div style="font-size:11px;color:var(--text3)">${cur.sales} vendas pagas</div>
+        <div style="font-size:11px;color:var(--text3)">${cur.sales} vendas pagas${cur.parciais?` + ${cur.parciais} com recebimento parcial`:''}</div>
       </div>
       <button onclick="_dreNav(1)" style="background:var(--bg3);border:none;border-radius:8px;padding:6px 14px;cursor:pointer;color:var(--text2);font-size:16px">›</button>
     </div>
