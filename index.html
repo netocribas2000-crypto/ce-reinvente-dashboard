@@ -1218,11 +1218,13 @@ function applyPendingOrders(){
   ORDERS.forEach(order=>{
     if(DB.meta.appliedOrders.includes(order.id))return;
     if(!DB.expenses)DB.expenses=[];
-    DB.expenses.push({id:Date.now()+Math.random(),date:order.date,cat:'Reposição',desc:order.desc,value:order.value});
+    DB.expenses.push({id:Date.now()+Math.random(),date:order.date+'T12:00:00',cat:'Reposição',desc:order.desc,value:order.value});
     (order.items||[]).forEach(pid=>{DB.stock[pid]=(DB.stock[pid]||0)+1;});
     DB.meta.appliedOrders.push(order.id);
     changed=true;
   });
+  // Datas só 'AAAA-MM-DD' viram meia-noite UTC e aparecem 1 dia antes (fuso do Brasil); fixa ao meio-dia
+  (DB.expenses||[]).forEach(e=>{if(/^\d{4}-\d\d-\d\d$/.test(e.date||'')){e.date+='T12:00:00';changed=true;}});
   NEW_CLIENTS.forEach(nc=>{
     if(DB.meta.appliedOrders.includes(nc.migId))return;
     const exists=DB.clients.some(c=>c.name.toLowerCase()===nc.name.toLowerCase());
